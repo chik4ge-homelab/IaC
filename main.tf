@@ -168,6 +168,14 @@ resource "proxmox_virtual_environment_vm" "workers" {
     bridge = "vmbr0"
   }
 
+  dynamic "usb" {
+    for_each = var.workers[count.index].usb ? [1] : []
+    content {
+      mapping = "mapping"
+      usb3    = true
+    }
+  }
+
   initialization {
     ip_config {
       ipv4 {
@@ -183,4 +191,17 @@ resource "proxmox_virtual_environment_vm" "workers" {
       ]
     }
   }
+}
+
+resource "proxmox_virtual_environment_hardware_mapping_usb" "usb_mapping" {
+  comment = "Managed by terraform"
+  name    = "mapping"
+  map = [
+    for device in var.usb_devices :
+    {
+      id      = device.id
+      node    = device.node
+      comment = device.comment
+    }
+  ]
 }

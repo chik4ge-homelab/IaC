@@ -86,7 +86,8 @@ variable "workers" {
       memory        = optional(number, 10 * 1024) # 10GB
       cpu_sockets   = optional(number, 1)
       cpu_cores     = optional(number, 4)
-      disk_size     = optional(number, 130) # 130GB
+      disk_size     = optional(number, 130)   # 130GB
+      usb           = optional(bool, true) # Enable USB passthrough
     })
   )
   default = [
@@ -121,5 +122,46 @@ variable "workers" {
       memory        = 8 * 1024 # 8GB
       disk_size     = 64       # 64GB
     },
+    {
+      name          = "k8s-w-edelweiss"
+      vm_id         = 205
+      pve_node_name = "host03"
+      ip            = "192.168.1.205"
+      memory        = 14 * 1024 # 14GB
+      disk_size     = 64        # 64GB
+      usb           = false
+    },
+    {
+      name          = "k8s-w-freesia"
+      vm_id         = 206
+      pve_node_name = "host03"
+      ip            = "192.168.1.206"
+      memory        = 14 * 1024 # 14GB
+      disk_size     = 64        # 64GB
+      usb           = false
+    },
+  ]
+}
+
+variable "usb_devices" {
+  description = "List of USB devices for the VMs"
+  type = list(
+    object({
+      id      = string
+      node    = string
+      comment = string
+    })
+  )
+  default = [
+    {
+      id      = "8087:0026"
+      node    = "host01"
+      comment = "Intel Corp. AX201 Bluetooth"
+    },
+    {
+      id      = "0bda:c820"
+      node    = "host02"
+      comment = "Realtek Semiconductor Corp. 802.11ac NIC"
+    }
   ]
 }
