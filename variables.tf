@@ -68,8 +68,8 @@ variable "control_planes" {
     },
     {
       name          = "k8s-cp-carbon"
-      vm_id         = 104
-      pve_node_name = "host01"
+      vm_id         = 103
+      pve_node_name = "host03"
       ip            = "192.168.1.103"
     },
   ]
@@ -86,8 +86,8 @@ variable "workers" {
       memory        = optional(number, 10 * 1024) # 10GB
       cpu_sockets   = optional(number, 1)
       cpu_cores     = optional(number, 4)
-      disk_size     = optional(number, 130)   # 130GB
-      usb           = optional(bool, true) # Enable USB passthrough
+      disk_size     = optional(number, 130) # 130GB
+      usb           = optional(bool, true)  # Enable USB passthrough
     })
   )
   default = [
@@ -96,39 +96,41 @@ variable "workers" {
       vm_id         = 201
       pve_node_name = "host01"
       ip            = "192.168.1.201"
-      memory        = 8 * 1024 # 16GB
-      disk_size     = 64       # 64GB
+      memory        = 13 * 1024 # 16GB
+      disk_size     = 64        # 64GB
     },
     {
       name          = "k8s-w-blossom"
       vm_id         = 202
       pve_node_name = "host01"
       ip            = "192.168.1.202"
-      memory        = 8 * 1024 # 8GB
-      disk_size     = 64       # 64GB
+      memory        = 13 * 1024 # 8GB
+      disk_size     = 64        # 64GB
     },
     {
       name          = "k8s-w-clover"
       vm_id         = 203
       pve_node_name = "host02"
       ip            = "192.168.1.203"
-      disk_size     = 64 # 64GB
+      memory        = 13 * 1024 # 8GB
+      disk_size     = 64        # 64GB
     },
     {
       name          = "k8s-w-daisy"
       vm_id         = 204
       pve_node_name = "host02"
       ip            = "192.168.1.204"
-      memory        = 8 * 1024 # 8GB
-      disk_size     = 64       # 64GB
+      memory        = 13 * 1024 # 8GB
+      disk_size     = 64        # 64GB
     },
     {
       name          = "k8s-w-edelweiss"
       vm_id         = 205
       pve_node_name = "host03"
       ip            = "192.168.1.205"
-      memory        = 14 * 1024 # 14GB
-      disk_size     = 64        # 64GB
+      memory        = 8 * 1024 # 14GB
+      cpu_cores     = 12
+      disk_size     = 64 # 64GB
       usb           = false
     },
     {
@@ -136,8 +138,9 @@ variable "workers" {
       vm_id         = 206
       pve_node_name = "host03"
       ip            = "192.168.1.206"
-      memory        = 14 * 1024 # 14GB
-      disk_size     = 64        # 64GB
+      memory        = 8 * 1024 # 14GB
+      cpu_cores     = 12
+      disk_size     = 64 # 64GB
       usb           = false
     },
   ]
