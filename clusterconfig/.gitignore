@@ -1,0 +1,10 @@
+talos-k8s-k8s-cp-argon.yaml
+talos-k8s-k8s-cp-boron.yaml
+talos-k8s-k8s-cp-carbon.yaml
+talos-k8s-k8s-w-anemone.yaml
+talos-k8s-k8s-w-blossom.yaml
+talos-k8s-k8s-w-clover.yaml
+talos-k8s-k8s-w-daisy.yaml
+talos-k8s-k8s-w-edelweiss.yaml
+talos-k8s-k8s-w-freesia.yaml
+talosconfig

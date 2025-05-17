@@ -1,22 +1,40 @@
-## デプロイ
-```bash
-# （必要に応じて）terraform destroy
-sh deploy.sh
-```
+# Homelab IaC
+## Overview
+This repository contains the infrastructure as code (IaC) for my homelab, which is built using Proxmox and Talos Linux.
 
-## variablesについて
-- 機密情報と、moduleをまたいで使用する情報は、`./variables.tf` に記載する
-- module内でのみ使用する情報は、`./<module>*/variables.tf` に記載する
+## Prerequisites
+### Terraform
+- terraform
+### Talhelper
+- talhelper
+- sops
+- age
+- jq
+- talosctl
+- bitwarden-cli
+
+To install all prerequisites / init secrets:
+```bash
+brew install sops age jq talosctl bitwarden-cli hashicorp/tap/terraform
+sh ./init.sh
+```
 
 ### `./terraform.tfvars` 
 ```javascript
 pve_user        = "user@pam"
 pve_password    = "password"
-bitwarden_token = "bitwarden_machine_account_token"
 ```
 
-## VMの再作成
-すでにクラスタが稼働している状態で、特定のノードを再作成する場合は以下を実行する
+### Deploy
 ```bash
-terraform apply -target="talos_machine_configuration_apply.worker[i]" -target="proxmox_virtual_environment_vm.workers[i]" -replace="proxmox_virtual_environment_vm.workers[i]"
+terraform init # optional
+
+terraform apply -target="proxmox_virtual_environment_vm.workers[i]"
+talhelper genconfig # after making changes to talconfig.yaml
+
+talhelper gencommand apply # copy and paste the command which is desired to apply
+
+# or
+
+talhelper gencommand upgrade # copy and paste the command which is desired to apply
 ```

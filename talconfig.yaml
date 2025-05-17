@@ -1,0 +1,117 @@
+---
+clusterName: talos-k8s
+endpoint: https://192.168.1.101:6443
+
+talosVersion: v1.9.5
+kubernetesVersion: v1.32.2
+
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: k8s-cp-argon
+    controlPlane: true
+    ipAddress: 192.168.1.101
+    installDisk: /dev/sda
+
+  - hostname: k8s-cp-boron
+    controlPlane: true
+    ipAddress: 192.168.1.102
+    installDisk: /dev/sda
+
+  - hostname: k8s-cp-carbon
+    controlPlane: true
+    ipAddress: 192.168.1.103
+    installDisk: /dev/sda
+
+  - hostname: k8s-w-anemone
+    controlPlane: false
+    ipAddress: 192.168.1.201
+    installDisk: /dev/sda
+
+  # - hostname: k8s-w-blossom
+  #   controlPlane: false
+  #   ipAddress: 192.168.1.202
+  #   installDisk: /dev/sda
+
+  - hostname: k8s-w-clover
+    controlPlane: false
+    ipAddress: 192.168.1.203
+    installDisk: /dev/sda
+
+  # - hostname: k8s-w-daisy
+  #   controlPlane: false
+  #   ipAddress: 192.168.1.204
+  #   installDisk: /dev/sda
+
+  - hostname: k8s-w-edelweiss
+    controlPlane: false
+    ipAddress: 192.168.1.205
+    installDisk: /dev/sda
+
+  # - hostname: k8s-w-freesia
+  #   controlPlane: false
+  #   ipAddress: 192.168.1.206
+  #   installDisk: /dev/sda
+
+  # - hostname: k8s-w-zinnia
+  #   controlPlane: false
+  #   ipAddress: 64.110.107.81
+  #   installDisk: /dev/sda
+
+controlPlane:
+  # extensionServices:
+  #   - name: tailscale
+  #     environment:
+  #       - TS_AUTHKEY=${tsAuth}
+  #       - TS_ROUTES=10.96.0.0/12
+  networkInterfaces:
+    - deviceSelector:
+        physical: true
+      vip:
+        ip: 192.168.1.100
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/qemu-guest-agent
+          # - siderolabs/tailscale
+  patches:
+    - |-
+      cluster:
+        apiServer:
+          admissionControl:
+            - name: PodSecurity
+              configuration:
+                apiVersion: pod-security.admission.config.k8s.io/v1beta1
+                kind: PodSecurityConfiguration
+                exemptions:
+                  namespaces:
+                    - democratic-csi
+                    - tailscale
+
+worker:
+  # extensionServices:
+  #   - name: tailscale
+  #     environment:
+  #       - TS_AUTHKEY=${tsAuth}
+  #       - TS_ROUTES=10.96.0.0/12
+  volumes:
+    - name: EPHEMERAL
+      provisioning:
+        diskSelector:
+          match: disk.transport == 'virtio' && !system_disk
+        minSize: 32G
+        grow: true
+  schematic:
+    customization:
+      systemExtensions:
+        officialExtensions:
+          - siderolabs/qemu-guest-agent
+          # - siderolabs/tailscale
+          - siderolabs/iscsi-tools
+  patches:
+    - |-
+      cluster:
+        proxy:
+          disabled: true
