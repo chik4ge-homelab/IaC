@@ -92,7 +92,7 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
     }
     dns {
       servers = [
-        "100.100.100.100",
+        # "100.100.100.100",
         "8.8.8.8",
         "8.8.4.4"
       ]
@@ -111,6 +111,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
   machine         = "q35"
   stop_on_destroy = true
   scsi_hardware   = "virtio-scsi-single"
+  started         = var.workers[count.index].active
   operating_system {
     type = "l26"
   }
@@ -185,7 +186,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     }
     dns {
       servers = [
-        "100.100.100.100",
+        # "100.100.100.100",
         "8.8.8.8",
         "8.8.4.4"
       ]

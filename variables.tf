@@ -79,6 +79,7 @@ variable "workers" {
   description = "settings for k8s worker nodes"
   type = list(
     object({
+      active        = optional(bool, true) # Enable or disable the worker node
       name          = string
       vm_id         = number
       pve_node_name = string
@@ -96,10 +97,11 @@ variable "workers" {
       vm_id         = 201
       pve_node_name = "host01"
       ip            = "192.168.1.201"
-      memory        = 13 * 1024 # 16GB
+      memory        = 26 * 1024 # 16GB
       disk_size     = 64        # 64GB
     },
     {
+      active        = false
       name          = "k8s-w-blossom"
       vm_id         = 202
       pve_node_name = "host01"
@@ -112,10 +114,11 @@ variable "workers" {
       vm_id         = 203
       pve_node_name = "host02"
       ip            = "192.168.1.203"
-      memory        = 13 * 1024 # 8GB
+      memory        = 26 * 1024 # 8GB
       disk_size     = 64        # 64GB
     },
     {
+      active        = false
       name          = "k8s-w-daisy"
       vm_id         = 204
       pve_node_name = "host02"
@@ -128,12 +131,13 @@ variable "workers" {
       vm_id         = 205
       pve_node_name = "host03"
       ip            = "192.168.1.205"
-      memory        = 8 * 1024 # 14GB
+      memory        = 16 * 1024 # 14GB
       cpu_cores     = 12
       disk_size     = 64 # 64GB
       usb           = false
     },
     {
+      active        = false
       name          = "k8s-w-freesia"
       vm_id         = 206
       pve_node_name = "host03"
