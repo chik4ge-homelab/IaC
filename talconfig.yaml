@@ -60,6 +60,9 @@ nodes:
   #   installDisk: /dev/sda
 
 controlPlane:
+  machineSpec:
+    mode: nocloud
+    arch: amd64
   # extensionServices:
   #   - name: tailscale
   #     environment:
@@ -78,6 +81,14 @@ controlPlane:
           # - siderolabs/tailscale
   patches:
     - |-
+      machine:
+        features:
+          kubernetesTalosAPIAccess:
+            enabled: true
+            allowedRoles:
+              - os:etcd:backup
+            allowedKubernetesNamespaces:
+              - talos-backup
       cluster:
         apiServer:
           admissionControl:
@@ -91,6 +102,9 @@ controlPlane:
                     - tailscale
 
 worker:
+  machineSpec:
+    mode: nocloud
+    arch: amd64
   # extensionServices:
   #   - name: tailscale
   #     environment:
@@ -107,9 +121,13 @@ worker:
     customization:
       systemExtensions:
         officialExtensions:
-          - siderolabs/qemu-guest-agent
-          # - siderolabs/tailscale
           - siderolabs/iscsi-tools
+          - siderolabs/qemu-guest-agent
+      # systemExtensions:
+      #   officialExtensions:
+      #     - siderolabs/qemu-guest-agent
+      #     # - siderolabs/tailscale
+      #     - siderolabs/iscsi-tools
   patches:
     - |-
       cluster:
