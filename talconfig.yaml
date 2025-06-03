@@ -29,10 +29,10 @@ nodes:
     ipAddress: 192.168.1.201
     installDisk: /dev/sda
 
-  # - hostname: k8s-w-blossom
-  #   controlPlane: false
-  #   ipAddress: 192.168.1.202
-  #   installDisk: /dev/sda
+  - hostname: k8s-w-blossom
+    controlPlane: false
+    ipAddress: 192.168.1.202
+    installDisk: /dev/sda
 
   - hostname: k8s-w-clover
     controlPlane: false
