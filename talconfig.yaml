@@ -133,3 +133,7 @@ worker:
       cluster:
         proxy:
           disabled: true
+      machine:
+        sysctls:
+          fs.inotify.max_user_watches: 524288
+          user.max_user_namespaces: 28633
