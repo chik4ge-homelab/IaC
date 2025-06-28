@@ -98,7 +98,7 @@ variable "workers" {
       pve_node_name = "host01"
       ip            = "192.168.1.201"
       memory        = 26 * 1024 # 26GB
-      disk_size     = 64        # 64GB
+      disk_size     = 256        # 256GB
     },
     {
       name          = "k8s-w-blossom"
@@ -107,7 +107,7 @@ variable "workers" {
       ip            = "192.168.1.202"
       memory        = 26 * 1024 # 26GB
       cpu_cores     = 12
-      disk_size     = 64 # 64GB
+      disk_size     = 256 # 256GB
       usb           = false
     },
     {
@@ -116,7 +116,7 @@ variable "workers" {
       pve_node_name = "host02"
       ip            = "192.168.1.203"
       memory        = 26 * 1024 # 26GB
-      disk_size     = 64        # 64GB
+      disk_size     = 256        # 256GB
     },
     {
       active        = false
@@ -125,7 +125,7 @@ variable "workers" {
       pve_node_name = "host02"
       ip            = "192.168.1.204"
       memory        = 13 * 1024 # 13GB
-      disk_size     = 64        # 64GB
+      disk_size     = 256        # 256GB
     },
     {
       name          = "k8s-w-edelweiss"
@@ -134,7 +134,7 @@ variable "workers" {
       ip            = "192.168.1.205"
       memory        = 20 * 1024 # 16GB
       cpu_cores     = 12
-      disk_size     = 64 # 64GB
+      disk_size     = 256 # 256GB
       usb           = false
     },
     {
@@ -145,7 +145,7 @@ variable "workers" {
       ip            = "192.168.1.206"
       memory        = 8 * 1024 # 8GB
       cpu_cores     = 12
-      disk_size     = 64 # 64GB
+      disk_size     = 256 # 256GB
       usb           = false
     },
   ]

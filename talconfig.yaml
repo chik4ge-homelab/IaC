@@ -8,6 +8,48 @@ kubernetesVersion: v1.33.1 # renovate: datasource=github-releases packageName=ku
 cniConfig:
   name: none
 
+inlineManifests:
+  - name: dispool-anemone
+    contents: |
+      apiVersion: "openebs.io/v1beta3"
+      kind: DiskPool
+      metadata:
+        name: pool-on-anemone
+        namespace: openebs
+      spec:
+        node: k8s-w-anemone
+        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1"]
+  - name: dispool-blossom
+    contents: |
+      apiVersion: "openebs.io/v1beta3"
+      kind: DiskPool
+      metadata:
+        name: pool-on-blossom
+        namespace: openebs
+      spec:
+        node: k8s-w-blossom
+        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1"]
+  - name: dispool-clover
+    contents: |
+      apiVersion: "openebs.io/v1beta3"
+      kind: DiskPool
+      metadata:
+        name: pool-on-clover
+        namespace: openebs
+      spec:
+        node: k8s-w-clover
+        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1"]
+  - name: dispool-edelweiss
+    contents: |
+      apiVersion: "openebs.io/v1beta3"
+      kind: DiskPool
+      metadata:
+        name: pool-on-edelweiss
+        namespace: openebs
+      spec:
+        node: k8s-w-edelweiss
+        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi1"]
+
 nodes:
   - hostname: k8s-cp-argon
     controlPlane: true
@@ -100,6 +142,7 @@ controlPlane:
                   namespaces:
                     - democratic-csi
                     - tailscale
+                    - openebs
 
 worker:
   machineSpec:
@@ -137,3 +180,15 @@ worker:
         sysctls:
           fs.inotify.max_user_watches: 524288
           user.max_user_namespaces: 28633
+          vm.nr_hugepages: "1024"
+        nodeLabels:
+          openebs.io/engine: "mayastor"
+        kubelet:
+          extraMounts:
+            - destination: /var/local
+              type: bind
+              source: /var/local
+              options:
+                - bind
+                - rshared
+                - rw
