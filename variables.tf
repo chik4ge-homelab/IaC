@@ -36,7 +36,7 @@ variable "network_gateway" {
 variable "talos_version" {
   description = "The version of Talos to use"
   type        = string
-  default     = "v1.10.2" # renovate: datasource=github-releases packageName=siderolabs/talos
+  default     = "v1.10.5" # renovate: datasource=github-releases packageName=siderolabs/talos
 }
 
 variable "control_planes" {
