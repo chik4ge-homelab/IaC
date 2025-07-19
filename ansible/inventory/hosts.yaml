@@ -1,0 +1,12 @@
+all:
+  vars:
+    ansible_user: root
+  hosts:
+    host01:
+      ansible_host: 192.168.0.150
+    host02:
+      ansible_host: 192.168.0.151
+    host03:
+      ansible_host: 192.168.0.152
+    host04:
+      ansible_host: 192.168.0.153
