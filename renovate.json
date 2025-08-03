@@ -14,7 +14,7 @@
       "customType": "regex",
       "description": "Terraform variables",
       "fileMatch": [
-        "**/variables.tf"
+        "(^|/)variables\\.tf$"
       ],
       "matchStrings": [
         "variable\\s+\"(?<depName>[a-z0-9_]+?)_version\"\\s+{[\\s\\S]*?default\\s+=\\s+\"(?<currentValue>[a-z0-9.-]+)\"\\s+# renovate: datasource=(?<datasource>.+?)(?: packageName=(?<packageName>.+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?(?: versioning=(?<versioning>.+?))?\\s"
@@ -24,7 +24,7 @@
       "customType": "regex",
       "description": "Talconfig versioning",
       "fileMatch": [
-        "**/talconfig.yaml"
+        "(^|/)talconfig\\.yaml$"
       ],
       "matchStrings": [
         "(?<depName>[a-zA-Z]+)Version:\\s+v?(?<currentValue>[a-z0-9.-]+)\\s+# renovate: datasource=(?<datasource>.+?)(?: packageName=(?<packageName>.+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?(?: versioning=(?<versioning>.+?))?\\s"
