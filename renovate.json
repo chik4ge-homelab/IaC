@@ -17,7 +17,7 @@
         "^variables.tf$"
       ],
       "matchStrings": [
-        "variable\\s+\"(?<depName>[a-z0-9_]+?)_version\"\\s+{[\\s\\S]*?default\\s+=\\s+\"(?<currentValue>[a-z0-9.-]+)\"\\s+# renovate: datasource=(?<datasource>.+?)(?: packageName=(?<packageName>.+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?(?: versioning=(?<versioning>.+?))?\\s"
+        "variable\\s+\"(?<depName>[a-z0-9_]+?)_version\"\\s+{[\\s\\S]*?default\\s+=\\s+\"v?(?<currentValue>[a-z0-9.-]+)\"\\s+# renovate: datasource=(?<datasource>.+?)(?: packageName=(?<packageName>.+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?(?: versioning=(?<versioning>.+?))?\\s"
       ]
     },
     {
