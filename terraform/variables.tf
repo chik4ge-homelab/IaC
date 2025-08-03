@@ -59,12 +59,14 @@ variable "control_planes" {
       vm_id         = 101
       pve_node_name = "host01"
       ip            = "192.168.1.101"
+      cpu_cores     = 1
     },
     {
       name          = "k8s-cp-boron"
       vm_id         = 102
       pve_node_name = "host02"
       ip            = "192.168.1.102"
+      cpu_cores     = 1
     },
     {
       name          = "k8s-cp-carbon"
@@ -79,44 +81,50 @@ variable "workers" {
   description = "settings for k8s worker nodes"
   type = list(
     object({
-      active        = optional(bool, true) # Enable or disable the worker node
-      name          = string
-      vm_id         = number
-      pve_node_name = string
-      ip            = string
-      memory        = optional(number, 10 * 1024) # 10GB
-      cpu_sockets   = optional(number, 1)
-      cpu_cores     = optional(number, 4)
-      disk_size     = optional(number, 130) # 130GB
-      usb           = optional(bool, true)  # Enable USB passthrough
+      active            = optional(bool, true) # Enable or disable the worker node
+      name              = string
+      vm_id             = number
+      pve_node_name     = string
+      ip                = string
+      memory            = optional(number, 10 * 1024) # 10GB
+      cpu_sockets       = optional(number, 1)
+      cpu_cores         = optional(number, 4)
+      disk_size         = optional(number, 130) # 130GB
+      openebs_disk_size = optional(number, 200) # 200GB for OpenEBS storage
+      usb               = optional(bool, true)  # Enable USB passthrough
     })
   )
   default = [
     {
-      name          = "k8s-w-anemone"
-      vm_id         = 201
-      pve_node_name = "host01"
-      ip            = "192.168.1.201"
-      memory        = 26 * 1024 # 26GB
-      disk_size     = 256       # 256GB
+      name              = "k8s-w-anemone"
+      vm_id             = 201
+      pve_node_name     = "host01"
+      ip                = "192.168.1.201"
+      cpu_cores         = 3
+      memory            = 26 * 1024 # 26GB
+      disk_size         = 100       # 100GB for EPHEMERAL
+      openebs_disk_size = 200       # 200GB for OpenEBS
     },
     {
-      name          = "k8s-w-blossom"
-      vm_id         = 202
-      pve_node_name = "host04"
-      ip            = "192.168.1.202"
-      memory        = 26 * 1024 # 26GB
-      cpu_cores     = 12
-      disk_size     = 256 # 256GB
-      usb           = false
+      name              = "k8s-w-blossom"
+      vm_id             = 202
+      pve_node_name     = "host04"
+      ip                = "192.168.1.202"
+      memory            = 26 * 1024 # 26GB
+      cpu_cores         = 12
+      disk_size         = 100 # 100GB for EPHEMERAL
+      openebs_disk_size = 200 # 200GB for OpenEBS
+      usb               = false
     },
     {
-      name          = "k8s-w-clover"
-      vm_id         = 203
-      pve_node_name = "host02"
-      ip            = "192.168.1.203"
-      memory        = 26 * 1024 # 26GB
-      disk_size     = 256       # 256GB
+      name              = "k8s-w-clover"
+      vm_id             = 203
+      pve_node_name     = "host02"
+      ip                = "192.168.1.203"
+      cpu_cores         = 3
+      memory            = 26 * 1024 # 26GB
+      disk_size         = 100       # 100GB for EPHEMERAL
+      openebs_disk_size = 200       # 200GB for OpenEBS
     },
     {
       active        = false
@@ -128,14 +136,15 @@ variable "workers" {
       disk_size     = 256       # 256GB
     },
     {
-      name          = "k8s-w-edelweiss"
-      vm_id         = 205
-      pve_node_name = "host03"
-      ip            = "192.168.1.205"
-      memory        = 20 * 1024 # 16GB
-      cpu_cores     = 12
-      disk_size     = 128 # 128GB
-      usb           = false
+      name              = "k8s-w-edelweiss"
+      vm_id             = 205
+      pve_node_name     = "host03"
+      ip                = "192.168.1.205"
+      memory            = 20 * 1024 # 16GB
+      cpu_cores         = 12
+      disk_size         = 100 # 100GB for EPHEMERAL
+      openebs_disk_size = 200 # 200GB for OpenEBS
+      usb               = false
     },
     {
       active        = false

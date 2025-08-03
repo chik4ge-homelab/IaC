@@ -1,0 +1,13 @@
+---
+- hosts: all
+  tasks:
+    - name: Test connection
+      ping:
+
+    - name: Show hostname
+      command: hostname
+      register: result
+
+    - name: Display hostname
+      debug:
+        msg: "Host: {{ result.stdout }}"
