@@ -13,7 +13,7 @@ locals {
 
   # image with qemu-guest-agent, other extensions are install when machineconfig is applied
   talos_iso_url       = "https://factory.talos.dev/image/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515/${var.talos_version}/nocloud-amd64.iso"
-  talos_iso_file_name = "talos-${var.talos_version}-nocloud-amd64.iso"
+  talos_iso_file_name = "talos-nocloud-amd64.iso"
 }
 
 resource "proxmox_virtual_environment_download_file" "talos_cloud_image" {
@@ -34,7 +34,7 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
 
   bios            = "ovmf"
   machine         = "q35"
-  stop_on_destroy = true
+  stop_on_destroy = false
   scsi_hardware   = "virtio-scsi-single"
   operating_system {
     type = "l26"
@@ -109,7 +109,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   bios            = "ovmf"
   machine         = "q35"
-  stop_on_destroy = true
+  stop_on_destroy = false
   scsi_hardware   = "virtio-scsi-single"
   started         = var.workers[count.index].active
   on_boot         = var.workers[count.index].active

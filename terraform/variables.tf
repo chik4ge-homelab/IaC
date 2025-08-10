@@ -101,7 +101,7 @@ variable "workers" {
       pve_node_name     = "host01"
       ip                = "192.168.1.201"
       cpu_cores         = 3
-      memory            = 26 * 1024 # 26GB
+      memory            = 10 * 1024 # 10GB
       disk_size         = 100       # 100GB for EPHEMERAL
       openebs_disk_size = 200       # 200GB for OpenEBS
     },
@@ -121,8 +121,8 @@ variable "workers" {
       vm_id             = 203
       pve_node_name     = "host02"
       ip                = "192.168.1.203"
-      cpu_cores         = 3
-      memory            = 26 * 1024 # 26GB
+      cpu_cores         = 15
+      memory            = 42 * 1024 # 42GB
       disk_size         = 100       # 100GB for EPHEMERAL
       openebs_disk_size = 200       # 200GB for OpenEBS
     },
