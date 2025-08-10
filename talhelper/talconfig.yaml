@@ -9,6 +9,38 @@ cniConfig:
   name: none
 
 inlineManifests:
+  - name: onepassword-namespace
+    contents: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: onepassword-connect
+  - name: external-secrets-namespace
+    contents: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: external-secrets
+  - name: op-credentials-secret
+    contents: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: op-credentials
+        namespace: onepassword-connect
+      type: Opaque
+      data:
+        1password-credentials.json: ${op_credentials_json}
+  - name: onepassword-connect-token-homelab
+    contents: |
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: onepassword-connect-token-homelab
+        namespace: external-secrets
+      type: Opaque
+      data:
+        token: ${op_access_token}
   - name: dispool-anemone
     contents: |
       apiVersion: "openebs.io/v1beta3"
