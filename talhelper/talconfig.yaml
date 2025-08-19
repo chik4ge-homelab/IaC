@@ -102,6 +102,8 @@ nodes:
     controlPlane: false
     ipAddress: 192.168.1.201
     installDisk: /dev/sda
+    nodeLabels:
+      chik4ge.me/node-tier: small
 
   - hostname: k8s-w-blossom
     controlPlane: false
