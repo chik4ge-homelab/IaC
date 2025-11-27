@@ -47,6 +47,7 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
     sockets = var.control_planes[count.index].cpu_sockets
     cores   = var.control_planes[count.index].cpu_cores
     type    = "x86-64-v2-AES"
+    units   = 1024
   }
 
   memory {
@@ -80,7 +81,8 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
   }
 
   network_device {
-    bridge = "vmbr0"
+    bridge  = "vmbr0"
+    vlan_id = var.network_vlan_id
   }
 
   initialization {
@@ -124,6 +126,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     sockets = var.workers[count.index].cpu_sockets
     cores   = var.workers[count.index].cpu_cores
     type    = "x86-64-v2-AES"
+    units   = 1024
   }
 
   memory {
@@ -178,7 +181,8 @@ resource "proxmox_virtual_environment_vm" "workers" {
   }
 
   network_device {
-    bridge = "vmbr0"
+    bridge  = "vmbr0"
+    vlan_id = var.network_vlan_id
   }
 
   dynamic "usb" {

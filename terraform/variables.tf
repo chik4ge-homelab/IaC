@@ -24,12 +24,18 @@ variable "pve_host" {
 variable "network_mask" {
   description = "The subnet mask for the VMs"
   type        = string
-  default     = "22"
+  default     = "24"
 }
 variable "network_gateway" {
   description = "The network gateway for the VMs"
   type        = string
-  default     = "192.168.0.1"
+  default     = "192.168.1.1"
+}
+
+variable "network_vlan_id" {
+  description = "The VLAN ID assigned to VM network interfaces"
+  type        = number
+  default     = 20
 }
 
 # Talos variables
@@ -117,14 +123,15 @@ variable "workers" {
       usb               = false
     },
     {
-      name              = "k8s-w-clover"
-      vm_id             = 203
-      pve_node_name     = "host02"
-      ip                = "192.168.1.203"
-      cpu_cores         = 15
-      memory            = 42 * 1024 # 42GB
-      disk_size         = 100       # 100GB for EPHEMERAL
-      openebs_disk_size = 200       # 200GB for OpenEBS
+      name          = "k8s-w-clover"
+      vm_id         = 203
+      pve_node_name = "host02"
+      ip            = "192.168.1.203"
+      cpu_cores     = 15
+      # memory            = 42 * 1024 # 42GB
+      memory            = 36864
+      disk_size         = 100 # 100GB for EPHEMERAL
+      openebs_disk_size = 200 # 200GB for OpenEBS
     },
     {
       active        = false
