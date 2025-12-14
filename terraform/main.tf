@@ -105,6 +105,13 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
 resource "proxmox_virtual_environment_vm" "workers" {
   count = length(var.workers)
 
+  lifecycle {
+    ignore_changes = [
+      disk[0].file_id,
+      tpm_state,
+    ]
+  }
+
   name        = var.workers[count.index].name
   description = "Managed by Terraform"
   tags        = sort(["kubernetes", "k8s-worker"])
