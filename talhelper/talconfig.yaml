@@ -177,6 +177,24 @@ controlPlane:
                     - democratic-csi
                     - tailscale
                     - openebs
+    - |-
+      cluster:
+        apiServer:
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 3Gi
+        controllerManager:
+          resources:
+            limits:
+              memory: 512Mi
+        scheduler:
+          resources:
+            limits:
+              memory: 512Mi
 
 worker:
   machineSpec:
