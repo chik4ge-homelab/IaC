@@ -41,46 +41,6 @@ inlineManifests:
       type: Opaque
       data:
         token: ${op_access_token}
-  - name: dispool-anemone
-    contents: |
-      apiVersion: "openebs.io/v1beta3"
-      kind: DiskPool
-      metadata:
-        name: pool-on-anemone
-        namespace: openebs
-      spec:
-        node: k8s-w-anemone
-        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi2"]
-  - name: dispool-blossom
-    contents: |
-      apiVersion: "openebs.io/v1beta3"
-      kind: DiskPool
-      metadata:
-        name: pool-on-blossom
-        namespace: openebs
-      spec:
-        node: k8s-w-blossom
-        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi2"]
-  - name: dispool-clover
-    contents: |
-      apiVersion: "openebs.io/v1beta3"
-      kind: DiskPool
-      metadata:
-        name: pool-on-clover
-        namespace: openebs
-      spec:
-        node: k8s-w-clover
-        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi2"]
-  - name: dispool-edelweiss
-    contents: |
-      apiVersion: "openebs.io/v1beta3"
-      kind: DiskPool
-      metadata:
-        name: pool-on-edelweiss
-        namespace: openebs
-      spec:
-        node: k8s-w-edelweiss
-        disks: ["uring:///dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_drive-scsi2"]
 
 nodes:
   - hostname: k8s-cp-argon
@@ -124,6 +84,23 @@ nodes:
     controlPlane: false
     ipAddress: 192.168.1.205
     installDisk: /dev/sda
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/nonfree-kmod-nvidia-production
+            - siderolabs/nvidia-container-toolkit-production
+    patches:
+      - |-
+        machine:
+          kernel:
+            modules:
+              - name: nvidia
+              - name: nvidia_uvm
+              - name: nvidia_drm
+              - name: nvidia_modeset
+          sysctls:
+            net.core.bpf_jit_harden: 1
 
   # - hostname: k8s-w-freesia
   #   controlPlane: false
