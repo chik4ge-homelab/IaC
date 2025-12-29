@@ -208,6 +208,17 @@ resource "proxmox_virtual_environment_vm" "workers" {
     }
   }
 
+  dynamic "hostpci" {
+    for_each = try(each.value.pci_mappings, [])
+    content {
+      device  = "hostpci${hostpci.key}"
+      mapping = hostpci.value.mapping
+      pcie    = hostpci.value.pcie
+      rombar  = hostpci.value.rombar
+      xvga    = hostpci.value.xvga
+    }
+  }
+
   initialization {
     ip_config {
       ipv4 {

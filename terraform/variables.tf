@@ -102,6 +102,17 @@ variable "workers" {
       disk_size         = optional(number, 130) # 130GB
       openebs_disk_size = optional(number, 200) # 200GB for OpenEBS storage
       usb               = optional(bool, true)  # Enable USB passthrough
+      pci_mappings = optional(
+        list(
+          object({
+            mapping = string
+            pcie    = optional(bool, false)
+            rombar  = optional(bool, true)
+            xvga    = optional(bool, false)
+          })
+        ),
+        []
+      ) # PCI passthrough mappings
     })
   )
   default = [
@@ -156,6 +167,12 @@ variable "workers" {
       disk_size         = 100 # 100GB for EPHEMERAL
       openebs_disk_size = 200 # 200GB for OpenEBS
       usb               = false
+      pci_mappings = [
+        {
+          mapping = "RTX3060Ti"
+          xvga    = true
+        }
+      ]
     },
     {
       active        = false
