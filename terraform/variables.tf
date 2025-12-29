@@ -170,7 +170,6 @@ variable "workers" {
       pci_mappings = [
         {
           mapping = "RTX3060Ti"
-          xvga    = true
         }
       ]
     },
