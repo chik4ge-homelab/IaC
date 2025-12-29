@@ -11,6 +11,14 @@ locals {
     for idx, node in local.pve_nodes : node => idx
   }
 
+  control_planes_by_name = {
+    for control_plane in var.control_planes : control_plane.name => control_plane if control_plane.active
+  }
+
+  workers_by_name = {
+    for worker in var.workers : worker.name => worker if worker.active
+  }
+
   # image with qemu-guest-agent, other extensions are install when machineconfig is applied
   talos_iso_url       = "https://factory.talos.dev/image/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515/${var.talos_version}/nocloud-amd64.iso"
   talos_iso_file_name = "talos-nocloud-amd64.iso"
@@ -26,9 +34,9 @@ resource "proxmox_virtual_environment_download_file" "talos_cloud_image" {
 }
 
 resource "proxmox_virtual_environment_vm" "control_planes" {
-  count = length(var.control_planes)
+  for_each = local.control_planes_by_name
 
-  name        = var.control_planes[count.index].name
+  name        = each.value.name
   description = "Managed by Terraform"
   tags        = sort(["kubernetes", "k8s-control"])
 
@@ -40,18 +48,18 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
     type = "l26"
   }
 
-  node_name = var.control_planes[count.index].pve_node_name
-  vm_id     = var.control_planes[count.index].vm_id
+  node_name = each.value.pve_node_name
+  vm_id     = each.value.vm_id
 
   cpu {
-    sockets = var.control_planes[count.index].cpu_sockets
-    cores   = var.control_planes[count.index].cpu_cores
+    sockets = each.value.cpu_sockets
+    cores   = each.value.cpu_cores
     type    = "x86-64-v2-AES"
     units   = 1024
   }
 
   memory {
-    dedicated = var.control_planes[count.index].memory
+    dedicated = each.value.memory
   }
 
   tpm_state {
@@ -71,7 +79,7 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
     iothread     = true
     ssd          = true
     discard      = "on"
-    size         = var.control_planes[count.index].disk_size
+    size         = each.value.disk_size
     file_id      = proxmox_virtual_environment_download_file.talos_cloud_image.id
   }
 
@@ -88,7 +96,7 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
   initialization {
     ip_config {
       ipv4 {
-        address = "${var.control_planes[count.index].ip}/${var.network_mask}"
+        address = "${each.value.ip}/${var.network_mask}"
         gateway = var.network_gateway
       }
     }
@@ -103,7 +111,7 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
 }
 
 resource "proxmox_virtual_environment_vm" "workers" {
-  count = length(var.workers)
+  for_each = local.workers_by_name
 
   lifecycle {
     ignore_changes = [
@@ -112,7 +120,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     ]
   }
 
-  name        = var.workers[count.index].name
+  name        = each.value.name
   description = "Managed by Terraform"
   tags        = sort(["kubernetes", "k8s-worker"])
 
@@ -120,24 +128,24 @@ resource "proxmox_virtual_environment_vm" "workers" {
   machine         = "q35"
   stop_on_destroy = false
   scsi_hardware   = "virtio-scsi-single"
-  started         = var.workers[count.index].active
-  on_boot         = var.workers[count.index].active
+  started         = each.value.active
+  on_boot         = each.value.active
   operating_system {
     type = "l26"
   }
 
-  node_name = var.workers[count.index].pve_node_name
-  vm_id     = var.workers[count.index].vm_id
+  node_name = each.value.pve_node_name
+  vm_id     = each.value.vm_id
 
   cpu {
-    sockets = var.workers[count.index].cpu_sockets
-    cores   = var.workers[count.index].cpu_cores
+    sockets = each.value.cpu_sockets
+    cores   = each.value.cpu_cores
     type    = "x86-64-v2-AES"
     units   = 1024
   }
 
   memory {
-    dedicated = var.workers[count.index].memory
+    dedicated = each.value.memory
   }
 
   tpm_state {
@@ -168,7 +176,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     iothread     = true
     ssd          = true
     discard      = "on"
-    size         = var.workers[count.index].disk_size
+    size         = each.value.disk_size
   }
 
   # OpenEBS dedicated disk
@@ -179,7 +187,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     iothread     = true
     ssd          = true
     discard      = "on"
-    size         = var.workers[count.index].openebs_disk_size
+    size         = each.value.openebs_disk_size
   }
 
   agent {
@@ -193,7 +201,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
   }
 
   dynamic "usb" {
-    for_each = var.workers[count.index].usb ? [1] : []
+    for_each = each.value.usb ? [1] : []
     content {
       mapping = "mapping"
       usb3    = true
@@ -203,7 +211,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
   initialization {
     ip_config {
       ipv4 {
-        address = "${var.workers[count.index].ip}/${var.network_mask}"
+        address = "${each.value.ip}/${var.network_mask}"
         gateway = var.network_gateway
       }
     }
@@ -226,6 +234,22 @@ resource "proxmox_virtual_environment_hardware_mapping_usb" "usb_mapping" {
       id      = device.id
       node    = device.node
       comment = device.comment
+    }
+  ]
+}
+
+resource "proxmox_virtual_environment_hardware_mapping_pci" "pci_mappings" {
+  count   = length(var.pci_devices)
+  comment = "Managed by terraform"
+  name    = var.pci_devices[count.index].name
+  map = [
+    for device in var.pci_devices[count.index].map :
+    {
+      id           = device.id
+      node         = device.node
+      path         = device.path
+      iommu_group  = device.iommu_group
+      subsystem_id = device.subsystem_id
     }
   ]
 }

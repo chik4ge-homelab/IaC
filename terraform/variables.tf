@@ -49,6 +49,7 @@ variable "control_planes" {
   description = "settings for k8s control planes"
   type = list(
     object({
+      active        = optional(bool, true) # Enable or disable the control plane node
       name          = string
       vm_id         = number
       pve_node_name = string
@@ -110,9 +111,9 @@ variable "workers" {
       pve_node_name     = "host01"
       ip                = "192.168.1.201"
       cpu_cores         = 3
-      memory            = 8 * 1024  # 8GB
-      disk_size         = 100       # 100GB for EPHEMERAL
-      openebs_disk_size = 200       # 200GB for OpenEBS
+      memory            = 8 * 1024 # 8GB
+      disk_size         = 100      # 100GB for EPHEMERAL
+      openebs_disk_size = 200      # 200GB for OpenEBS
     },
     {
       name              = "k8s-w-blossom"
@@ -132,9 +133,9 @@ variable "workers" {
       ip            = "192.168.1.203"
       cpu_cores     = 15
       # memory            = 42 * 1024 # 42GB
-      memory            = 34816
-      disk_size         = 100 # 100GB for EPHEMERAL
-      openebs_disk_size = 200 # 200GB for OpenEBS
+      memory            = 28 * 1024 # 34GB
+      disk_size         = 100       # 100GB for EPHEMERAL
+      openebs_disk_size = 200       # 200GB for OpenEBS
     },
     {
       active        = false
@@ -189,6 +190,36 @@ variable "usb_devices" {
       id      = "0bda:c820"
       node    = "host02"
       comment = "Realtek Semiconductor Corp. 802.11ac NIC"
+    }
+  ]
+}
+
+variable "pci_devices" {
+  description = "List of PCI devices for the VMs"
+  type = list(
+    object({
+      name = string
+      map = list(
+        object({
+          id           = string
+          path         = string
+          node         = string
+          iommu_group  = optional(number)
+          subsystem_id = optional(string)
+        })
+      )
+    })
+  )
+  default = [
+    {
+      name = "RTX3060Ti"
+      map = [{
+        id           = "10de:2489"
+        iommu_group  = 19
+        node         = "host03"
+        path         = "0000:07:00"
+        subsystem_id = "1462:c972"
+      }]
     }
   ]
 }
