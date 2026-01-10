@@ -90,6 +90,8 @@ nodes:
           officialExtensions:
             - siderolabs/nonfree-kmod-nvidia-production
             - siderolabs/nvidia-container-toolkit-production
+            - siderolabs/qemu-guest-agent
+            - siderolabs/iscsi-tools
     patches:
       - |-
         machine:
@@ -195,11 +197,6 @@ worker:
         officialExtensions:
           - siderolabs/iscsi-tools
           - siderolabs/qemu-guest-agent
-      # systemExtensions:
-      #   officialExtensions:
-      #     - siderolabs/qemu-guest-agent
-      #     # - siderolabs/tailscale
-      #     - siderolabs/iscsi-tools
   patches:
     - |-
       cluster:

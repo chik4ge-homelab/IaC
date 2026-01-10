@@ -170,6 +170,7 @@ variable "workers" {
       pci_mappings = [
         {
           mapping = "RTX3060Ti"
+          pcie    = true
         }
       ]
     },
@@ -231,9 +232,9 @@ variable "pci_devices" {
       name = "RTX3060Ti"
       map = [{
         id           = "10de:2489"
-        iommu_group  = 19
+        iommu_group  = 15
         node         = "host03"
-        path         = "0000:07:00"
+        path         = "0000:01:00"
         subsystem_id = "1462:c972"
       }]
     }
