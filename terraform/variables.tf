@@ -144,7 +144,7 @@ variable "workers" {
       ip            = "192.168.1.203"
       cpu_cores     = 15
       # memory            = 42 * 1024 # 42GB
-      memory            = 28 * 1024 # 34GB
+      memory            = 22 * 1024 # 22GB
       disk_size         = 100       # 100GB for EPHEMERAL
       openebs_disk_size = 200       # 200GB for OpenEBS
     },
