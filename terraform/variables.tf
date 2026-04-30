@@ -42,7 +42,7 @@ variable "network_vlan_id" {
 variable "talos_version" {
   description = "The version of Talos to use"
   type        = string
-  default     = "v1.12.2" # renovate: datasource=github-releases packageName=siderolabs/talos
+  default     = "v1.13.0" # renovate: datasource=github-releases packageName=siderolabs/talos
 }
 
 variable "control_planes" {
