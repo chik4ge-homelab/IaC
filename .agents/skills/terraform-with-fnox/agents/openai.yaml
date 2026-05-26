@@ -1,0 +1,4 @@
+interface:
+  display_name: "Terraform With Fnox"
+  short_description: "Run Terraform with secrets through fnox"
+  default_prompt: "Use $terraform-with-fnox to run Terraform plan with credentials injected from 1Password."

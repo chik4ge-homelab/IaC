@@ -1,0 +1,11 @@
+if_missing = "error"
+
+[providers]
+onepass = { type = "1password", vault = "homelab" }
+
+[secrets]
+TF_VAR_pve_user = { provider = "onepass", value = "op://homelab/proxmox/username" }
+TF_VAR_pve_password = { provider = "onepass", value = "op://homelab/proxmox/password" }
+AWS_ENDPOINT_URL_S3 = { provider = "onepass", value = "op://homelab/remote-state-r2/endpoint" }
+AWS_ACCESS_KEY_ID = { provider = "onepass", value = "op://homelab/remote-state-r2/access-key-id" }
+AWS_SECRET_ACCESS_KEY = { provider = "onepass", value = "op://homelab/remote-state-r2/secret-access-key" }

@@ -21,6 +21,7 @@ For details, see: [Talos Official Disaster Recovery](https://www.talos.dev/v1.10
 ## Prerequisites
 - [mise](https://mise.jdx.dev/)
 - [1Password CLI](https://developer.1password.com/docs/cli/)
+- [fnox](https://fnox.jdx.dev/)
 
 The tools used by this repository are defined in `mise.toml`.
 
@@ -30,9 +31,16 @@ mise install
 
 ## Terraform
 
-Terraform commands run through the `tf` mise task. It loads Proxmox credentials
-and the Cloudflare R2 backend credentials from 1Password using
-`terraform/.env`.
+Terraform credentials are loaded from 1Password using `fnox`. Enable its shell
+integration once in your Zsh configuration:
+
+```sh
+eval "$(fnox activate zsh)"
+```
+
+Enter the Terraform directory before running Terraform commands. `fnox` loads
+the credentials described in `fnox.toml` when the directory is active and
+removes them when leaving it.
 
 Terraform state is stored in the Cloudflare R2 `terraform-state` bucket at
 `terraform/proxmox/terraform.tfstate`.
@@ -40,16 +48,17 @@ Terraform state is stored in the Cloudflare R2 `terraform-state` bucket at
 Initialize the backend after cloning the repository:
 
 ```sh
-mise run tf init
+cd terraform
+terraform init
 ```
 
-Run `mise run tf init -reconfigure` after changing the backend configuration.
+Run `terraform init -reconfigure` after changing the backend configuration.
 
 Plan and apply changes:
 
 ```sh
-mise run tf plan
-mise run tf apply
+terraform plan
+terraform apply
 ```
 
 ## Talhelper

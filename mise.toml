@@ -1,7 +1,6 @@
 [tools]
 "pipx:ansible-core" = "2.18"
 age = "latest"
-op = "latest"
 sops = "latest"
 talhelper = "latest"
 talosctl = "latest"
@@ -9,8 +8,3 @@ terraform = "latest"
 
 [env]
 SOPS_AGE_KEY_CMD = "op read op://homelab/age-keys/notesPlain"
-
-[tasks.tf]
-description = "Run Terraform with secrets loaded from 1Password"
-dir = "terraform"
-run = "op run --env-file=.env -- terraform"
