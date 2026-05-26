@@ -19,38 +19,43 @@ Please refer to that repository for CronJob configuration and management.
 For details, see: [Talos Official Disaster Recovery](https://www.talos.dev/v1.10/advanced/disaster-recovery/)
 
 ## Prerequisites
-### Terraform
-- terraform
-### Talhelper
-- talhelper
-- sops
-- age
-- jq
-- talosctl
-- bitwarden-cli
+- [mise](https://mise.jdx.dev/)
+- [1Password CLI](https://developer.1password.com/docs/cli/)
 
-To install all prerequisites / init secrets:
-```bash
-brew install sops age jq talosctl bitwarden-cli hashicorp/tap/terraform
-sh ./init.sh
+The tools used by this repository are defined in `mise.toml`.
+
+```sh
+mise install
 ```
 
-### `./terraform.tfvars` 
-```javascript
-pve_user        = "user@pam"
-pve_password    = "password"
+## Terraform
+
+Terraform commands run through the `tf` mise task. It loads Proxmox credentials
+and the Cloudflare R2 backend credentials from 1Password using
+`terraform/.env`.
+
+Terraform state is stored in the Cloudflare R2 `terraform-state` bucket at
+`terraform/proxmox/terraform.tfstate`.
+
+Initialize the backend after cloning the repository:
+
+```sh
+mise run tf init
 ```
 
-### Deploy
-```bash
-terraform init # optional
+Run `mise run tf init -reconfigure` after changing the backend configuration.
 
-terraform apply -target="proxmox_virtual_environment_vm.workers[i]"
-talhelper genconfig # after making changes to talconfig.yaml
+Plan and apply changes:
 
-talhelper gencommand apply # copy and paste the command which is desired to apply
+```sh
+mise run tf plan
+mise run tf apply
+```
 
-# or
+## Talhelper
 
-talhelper gencommand upgrade # copy and paste the command which is desired to apply
+```sh
+talhelper genconfig
+talhelper gencommand apply
+talhelper gencommand upgrade
 ```
