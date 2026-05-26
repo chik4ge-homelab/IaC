@@ -36,6 +36,13 @@ resource "proxmox_virtual_environment_download_file" "talos_cloud_image" {
 resource "proxmox_virtual_environment_vm" "control_planes" {
   for_each = local.control_planes_by_name
 
+  lifecycle {
+    ignore_changes = [
+      disk[0].file_id,
+      tpm_state,
+    ]
+  }
+
   name        = each.value.name
   description = "Managed by Terraform"
   tags        = sort(["kubernetes", "k8s-control"])
