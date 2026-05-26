@@ -54,7 +54,13 @@ mise run tf apply
 
 ## Talhelper
 
+Run Talhelper from its configuration directory. SOPS retrieves the age
+identity from 1Password through the environment configured in `mise.toml` and
+decrypts the committed `talenv.sops.yaml` and `talsecret.sops.yaml` files as
+needed.
+
 ```sh
+cd talhelper
 talhelper genconfig
 talhelper gencommand apply
 talhelper gencommand upgrade
