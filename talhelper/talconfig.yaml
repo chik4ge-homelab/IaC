@@ -104,10 +104,10 @@ nodes:
           sysctls:
             net.core.bpf_jit_harden: 1
 
-  # - hostname: k8s-w-freesia
-  #   controlPlane: false
-  #   ipAddress: 192.168.1.206
-  #   installDisk: /dev/sda
+  - hostname: k8s-w-freesia
+    controlPlane: false
+    ipAddress: 192.168.1.206
+    installDisk: /dev/sda
 
   # - hostname: k8s-w-zinnia
   #   controlPlane: false

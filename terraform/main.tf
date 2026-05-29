@@ -186,15 +186,18 @@ resource "proxmox_virtual_environment_vm" "workers" {
     size         = each.value.disk_size
   }
 
-  # OpenEBS dedicated disk
-  disk {
-    datastore_id = "local-lvm"
-    file_format  = "raw"
-    interface    = "scsi2"
-    iothread     = true
-    ssd          = true
-    discard      = "on"
-    size         = each.value.openebs_disk_size
+  dynamic "disk" {
+    for_each = each.value.openebs_disk_size == null ? [] : [each.value.openebs_disk_size]
+
+    content {
+      datastore_id = "local-lvm"
+      file_format  = "raw"
+      interface    = "scsi2"
+      iothread     = true
+      ssd          = true
+      discard      = "on"
+      size         = disk.value
+    }
   }
 
   agent {

@@ -100,8 +100,8 @@ variable "workers" {
       cpu_sockets       = optional(number, 1)
       cpu_cores         = optional(number, 4)
       disk_size         = optional(number, 130) # 130GB
-      openebs_disk_size = optional(number, 200) # 200GB for OpenEBS storage
-      usb               = optional(bool, true)  # Enable USB passthrough
+      openebs_disk_size = optional(number)
+      usb               = optional(bool, true) # Enable USB passthrough
       pci_mappings = optional(
         list(
           object({
@@ -175,14 +175,13 @@ variable "workers" {
       ]
     },
     {
-      active        = false
       name          = "k8s-w-freesia"
       vm_id         = 206
-      pve_node_name = "host03"
+      pve_node_name = "host05"
       ip            = "192.168.1.206"
-      memory        = 8 * 1024 # 8GB
+      memory        = 28 * 1024 # 28GB
       cpu_cores     = 12
-      disk_size     = 256 # 256GB
+      disk_size     = 100 # 100GB for EPHEMERAL
       usb           = false
     },
   ]
