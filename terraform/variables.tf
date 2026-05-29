@@ -12,37 +12,31 @@ variable "pve_password" {
 variable "pve_tls_insecure" {
   description = "Set to true to ignore certificate errors"
   type        = bool
-  default     = true
 }
 variable "pve_host" {
   description = "The hostname or IP of the proxmox server"
   type        = string
-  default     = "192.168.0.150:8006"
 }
 
 # network variables
 variable "network_mask" {
   description = "The subnet mask for the VMs"
   type        = string
-  default     = "24"
 }
 variable "network_gateway" {
   description = "The network gateway for the VMs"
   type        = string
-  default     = "192.168.1.1"
 }
 
 variable "network_vlan_id" {
   description = "The VLAN ID assigned to VM network interfaces"
   type        = number
-  default     = 20
 }
 
 # Talos variables
 variable "talos_version" {
   description = "The version of Talos to use"
   type        = string
-  default     = "v1.13.0" # renovate: datasource=github-releases packageName=siderolabs/talos
 }
 
 variable "control_planes" {
@@ -60,31 +54,6 @@ variable "control_planes" {
       disk_size     = optional(number, 20) # 20GB
     })
   )
-  default = [
-    {
-      name          = "k8s-cp-argon"
-      vm_id         = 101
-      pve_node_name = "host01"
-      ip            = "192.168.1.101"
-      cpu_cores     = 1
-      memory        = 6 * 1024
-    },
-    {
-      name          = "k8s-cp-boron"
-      vm_id         = 102
-      pve_node_name = "host02"
-      ip            = "192.168.1.102"
-      cpu_cores     = 1
-      memory        = 6 * 1024
-    },
-    {
-      name          = "k8s-cp-carbon"
-      vm_id         = 103
-      pve_node_name = "host04"
-      ip            = "192.168.1.103"
-      memory        = 6 * 1024
-    },
-  ]
 }
 
 variable "workers" {
@@ -115,76 +84,6 @@ variable "workers" {
       ) # PCI passthrough mappings
     })
   )
-  default = [
-    {
-      name              = "k8s-w-anemone"
-      vm_id             = 201
-      pve_node_name     = "host01"
-      ip                = "192.168.1.201"
-      cpu_cores         = 3
-      memory            = 8 * 1024 # 8GB
-      disk_size         = 100      # 100GB for EPHEMERAL
-      openebs_disk_size = 200      # 200GB for OpenEBS
-    },
-    {
-      name              = "k8s-w-blossom"
-      vm_id             = 202
-      pve_node_name     = "host04"
-      ip                = "192.168.1.202"
-      memory            = 24 * 1024 # 24GB
-      cpu_cores         = 12
-      disk_size         = 100 # 100GB for EPHEMERAL
-      openebs_disk_size = 200 # 200GB for OpenEBS
-      usb               = false
-    },
-    {
-      name          = "k8s-w-clover"
-      vm_id         = 203
-      pve_node_name = "host02"
-      ip            = "192.168.1.203"
-      cpu_cores     = 15
-      # memory            = 42 * 1024 # 42GB
-      memory            = 22 * 1024 # 22GB
-      disk_size         = 100       # 100GB for EPHEMERAL
-      openebs_disk_size = 200       # 200GB for OpenEBS
-    },
-    {
-      active        = false
-      name          = "k8s-w-daisy"
-      vm_id         = 204
-      pve_node_name = "host02"
-      ip            = "192.168.1.204"
-      memory        = 13 * 1024 # 13GB
-      disk_size     = 256       # 256GB
-    },
-    {
-      name              = "k8s-w-edelweiss"
-      vm_id             = 205
-      pve_node_name     = "host03"
-      ip                = "192.168.1.205"
-      memory            = 18 * 1024 # 18GB
-      cpu_cores         = 12
-      disk_size         = 100 # 100GB for EPHEMERAL
-      openebs_disk_size = 200 # 200GB for OpenEBS
-      usb               = false
-      pci_mappings = [
-        {
-          mapping = "RTX3060Ti"
-          pcie    = true
-        }
-      ]
-    },
-    {
-      name          = "k8s-w-freesia"
-      vm_id         = 206
-      pve_node_name = "host05"
-      ip            = "192.168.1.206"
-      memory        = 28 * 1024 # 28GB
-      cpu_cores     = 12
-      disk_size     = 100 # 100GB for EPHEMERAL
-      usb           = false
-    },
-  ]
 }
 
 variable "usb_devices" {
@@ -196,18 +95,6 @@ variable "usb_devices" {
       comment = string
     })
   )
-  default = [
-    {
-      id      = "8087:0026"
-      node    = "host01"
-      comment = "Intel Corp. AX201 Bluetooth"
-    },
-    {
-      id      = "0bda:c820"
-      node    = "host02"
-      comment = "Realtek Semiconductor Corp. 802.11ac NIC"
-    }
-  ]
 }
 
 variable "pci_devices" {
@@ -226,16 +113,4 @@ variable "pci_devices" {
       )
     })
   )
-  default = [
-    {
-      name = "RTX3060Ti"
-      map = [{
-        id           = "10de:2489"
-        iommu_group  = 15
-        node         = "host03"
-        path         = "0000:01:00"
-        subsystem_id = "1462:c972"
-      }]
-    }
-  ]
 }
