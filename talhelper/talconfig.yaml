@@ -176,12 +176,11 @@ controlPlane:
               memory: 512Mi
     - |-
       cluster:
+        proxy:
+          disabled: true
         controllerManager:
           extraArgs:
             bind-address: 0.0.0.0
-        proxy:
-          extraArgs:
-            metrics-bind-address: 0.0.0.0:10249
 
 worker:
   machineSpec:
