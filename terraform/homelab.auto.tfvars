@@ -62,7 +62,7 @@ workers = [
     pve_node_name     = "host02"
     ip                = "192.168.1.203"
     cpu_cores         = 15
-    memory            = 22 * 1024
+    memory            = 32 * 1024
     disk_size         = 100
     openebs_disk_size = 200
   },
