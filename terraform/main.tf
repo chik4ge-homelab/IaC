@@ -125,6 +125,11 @@ resource "proxmox_virtual_environment_vm" "workers" {
       disk[0].file_id,
       tpm_state,
     ]
+
+    precondition {
+      condition     = !each.value.iot_vlan || var.iot_vlan_id != null
+      error_message = "iot_vlan_id must be set when a worker has iot_vlan enabled."
+    }
   }
 
   name        = each.value.name
@@ -208,6 +213,14 @@ resource "proxmox_virtual_environment_vm" "workers" {
   network_device {
     bridge  = "vmbr0"
     vlan_id = var.network_vlan_id
+  }
+
+  dynamic "network_device" {
+    for_each = each.value.iot_vlan ? [1] : []
+    content {
+      bridge  = "vmbr0"
+      vlan_id = var.iot_vlan_id
+    }
   }
 
   dynamic "usb" {

@@ -69,6 +69,21 @@ nodes:
     controlPlane: false
     ipAddress: 192.168.1.202
     installDisk: /dev/sda
+    nodeLabels:
+      chik4ge.me/iot-vlan: "true"
+    patches:
+      - |-
+        machine:
+          network:
+            interfaces:
+              - interface: eth1
+                dhcp: false
+                addresses:
+                  - 192.168.3.20/24
+          sysctls:
+            net.ipv6.conf.all.forwarding: "0"
+            net.ipv6.conf.eth1.accept_ra: "1"
+            net.ipv6.conf.eth1.accept_ra_rt_info_max_plen: "64"
 
   - hostname: k8s-w-clover
     controlPlane: false
@@ -108,6 +123,21 @@ nodes:
     controlPlane: false
     ipAddress: 192.168.1.206
     installDisk: /dev/sda
+    nodeLabels:
+      chik4ge.me/iot-vlan: "true"
+    patches:
+      - |-
+        machine:
+          network:
+            interfaces:
+              - interface: eth1
+                dhcp: false
+                addresses:
+                  - 192.168.3.21/24
+          sysctls:
+            net.ipv6.conf.all.forwarding: "0"
+            net.ipv6.conf.eth1.accept_ra: "1"
+            net.ipv6.conf.eth1.accept_ra_rt_info_max_plen: "64"
 
   # - hostname: k8s-w-zinnia
   #   controlPlane: false
@@ -217,6 +247,9 @@ worker:
         nodeLabels:
           openebs.io/engine: "mayastor"
         kubelet:
+          nodeIP:
+            validSubnets:
+              - 192.168.1.0/24
           extraMounts:
             - destination: /var/local
               type: bind

@@ -33,6 +33,18 @@ variable "network_vlan_id" {
   type        = number
 }
 
+variable "iot_vlan_id" {
+  description = "The IoT VLAN ID assigned to selected VM network interfaces"
+  type        = number
+  default     = null
+  nullable    = true
+
+  validation {
+    condition     = var.iot_vlan_id == null || (var.iot_vlan_id >= 1 && var.iot_vlan_id <= 4094)
+    error_message = "iot_vlan_id must be null or a valid VLAN ID between 1 and 4094."
+  }
+}
+
 # Talos variables
 variable "talos_version" {
   description = "The version of Talos to use"
@@ -70,7 +82,8 @@ variable "workers" {
       cpu_cores         = optional(number, 4)
       disk_size         = optional(number, 130) # 130GB
       openebs_disk_size = optional(number)
-      usb               = optional(bool, true) # Enable USB passthrough
+      iot_vlan          = optional(bool, false) # Attach an additional NIC for the IoT VLAN
+      usb               = optional(bool, true)  # Enable USB passthrough
       pci_mappings = optional(
         list(
           object({

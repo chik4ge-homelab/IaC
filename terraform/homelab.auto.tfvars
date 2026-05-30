@@ -5,6 +5,7 @@ pve_host         = "192.168.0.150:8006"
 network_mask    = "24"
 network_gateway = "192.168.1.1"
 network_vlan_id = 20
+iot_vlan_id     = 30
 
 talos_version = "v1.13.0" # renovate: datasource=github-releases packageName=siderolabs/talos
 
@@ -54,6 +55,7 @@ workers = [
     cpu_cores         = 12
     disk_size         = 100
     openebs_disk_size = 200
+    iot_vlan          = true
     usb               = false
   },
   {
@@ -100,6 +102,7 @@ workers = [
     memory        = 28 * 1024
     cpu_cores     = 12
     disk_size     = 100
+    iot_vlan      = true
     usb           = false
   },
 ]
