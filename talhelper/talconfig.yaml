@@ -70,7 +70,7 @@ nodes:
     ipAddress: 192.168.1.202
     installDisk: /dev/sda
     nodeLabels:
-      chik4ge.me/iot-vlan: "true"
+      chik4ge.me/iot-access: "true"
     patches:
       - |-
         machine:
@@ -124,7 +124,7 @@ nodes:
     ipAddress: 192.168.1.206
     installDisk: /dev/sda
     nodeLabels:
-      chik4ge.me/iot-vlan: "true"
+      chik4ge.me/iot-access: "true"
     patches:
       - |-
         machine:

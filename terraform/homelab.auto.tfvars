@@ -56,7 +56,7 @@ workers = [
     disk_size         = 100
     openebs_disk_size = 200
     iot_vlan          = true
-    usb               = false
+    usb               = true
   },
   {
     name              = "k8s-w-clover"
@@ -103,7 +103,7 @@ workers = [
     cpu_cores     = 12
     disk_size     = 100
     iot_vlan      = true
-    usb           = false
+    usb           = true
   },
 ]
 
@@ -112,6 +112,16 @@ usb_devices = [
     id      = "8087:0026"
     node    = "host01"
     comment = "Intel Corp. AX201 Bluetooth"
+  },
+  {
+    id      = "0e8d:c616"
+    node    = "host04"
+    comment = "MediaTek Inc. Wireless_Device Bluetooth"
+  },
+  {
+    id      = "0e8d:c616"
+    node    = "host05"
+    comment = "MediaTek Inc. Wireless_Device Bluetooth"
   },
   {
     id      = "0bda:c820"
