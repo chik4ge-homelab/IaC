@@ -1,5 +1,5 @@
 [tools]
-"pipx:ansible-core" = "2.18"
+"pipx:ansible-core" = "2.21.3"
 age = "latest"
 sops = "latest"
 talhelper = "latest"
