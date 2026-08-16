@@ -1,0 +1,48 @@
+---
+- name: Disable NVMe APST on host02 osd.0 device
+  hosts: host02
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Read the active kernel command line
+      ansible.builtin.command: cat /proc/cmdline
+      register: active_cmdline
+      changed_when: false
+
+    - name: Add the APST disable parameter to GRUB
+      ansible.builtin.replace:
+        path: /etc/default/grub
+        regexp: '^(GRUB_CMDLINE_LINUX="(?![^"]*nvme_core\.default_ps_max_latency_us=0)[^"]*)+"$'
+        replace: '\1 nvme_core.default_ps_max_latency_us=0"'
+        backup: true
+      register: grub_cmdline
+
+    - name: Verify the persistent kernel command line setting
+      ansible.builtin.command: grep -E '^GRUB_CMDLINE_LINUX="[^"]*nvme_core\.default_ps_max_latency_us=0' /etc/default/grub
+      changed_when: false
+
+    - name: Regenerate GRUB configuration
+      ansible.builtin.command: update-grub
+      when: grub_cmdline.changed
+
+    - name: Reboot host02 to apply the kernel parameter
+      ansible.builtin.reboot:
+        pre_reboot_delay: 5
+        post_reboot_delay: 10
+        reboot_timeout: 900
+        test_command: grep -qw nvme_core.default_ps_max_latency_us=0 /proc/cmdline
+      when:
+        - grub_cmdline.changed or 'nvme_core.default_ps_max_latency_us=0' not in active_cmdline.stdout
+
+    - name: Verify the active kernel command line setting
+      ansible.builtin.command: cat /proc/cmdline
+      register: final_cmdline
+      changed_when: false
+      failed_when: "'nvme_core.default_ps_max_latency_us=0' not in final_cmdline.stdout"
+
+    - name: Verify that NVMe APST is disabled on osd.0 device
+      ansible.builtin.command: nvme get-feature /dev/nvme1 --feature-id=0x0c --human-readable
+      register: apst_feature
+      changed_when: false
+      failed_when: "'Autonomous Power State Transition Enable (APSTE): Disabled' not in apst_feature.stdout"
