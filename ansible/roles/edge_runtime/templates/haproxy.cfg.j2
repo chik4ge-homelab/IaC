@@ -12,6 +12,10 @@ defaults
   timeout client 1h
   timeout server 1h
 
+resolvers {{ haproxy_resolvers_name }}
+  parse-resolv-conf
+  hold valid {{ haproxy_resolvers_hold_valid }}
+
 {% for service in haproxy_tcp_services %}
 frontend {{ service.name }}
   mode tcp
@@ -21,6 +25,6 @@ frontend {{ service.name }}
 backend {{ service.backend_name }}
   mode tcp
   option tcp-check
-  server {{ service.backend_name }} {{ service.backend_address }}:{{ service.backend_port }} check{% if service.proxy_protocol | default('none') == 'v2' %} send-proxy-v2{% elif service.proxy_protocol | default('none') == 'v1' %} send-proxy{% endif %}
+  server {{ service.backend_name }} {{ service.backend_address }}:{{ service.backend_port }} check{% if service.proxy_protocol | default('none') == 'v2' %} send-proxy-v2{% elif service.proxy_protocol | default('none') == 'v1' %} send-proxy{% endif %} resolvers {{ haproxy_resolvers_name }} init-addr none
 
 {% endfor %}

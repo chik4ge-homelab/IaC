@@ -18,4 +18,6 @@ edge_runtime_packages:
   - iptables-persistent
 
 haproxy_tcp_services: []
+haproxy_resolvers_name: dns
+haproxy_resolvers_hold_valid: 10s
 edge_iptables_persistent_file: /etc/iptables/rules.v4
