@@ -13,3 +13,8 @@ TF_VAR_switchbot_api_token = { provider = "onepass", value = "op://homelab/switc
 TF_VAR_switchbot_api_secret = { provider = "onepass", value = "op://homelab/switchbot-token/secret" }
 TF_VAR_switchbot_mqtt_username = { provider = "onepass", value = "op://homelab/switchbot-mqtt/username" }
 TF_VAR_switchbot_mqtt_password = { provider = "onepass", value = "op://homelab/switchbot-mqtt/credential" }
+OCI_TENANCY_OCID = { provider = "onepass", value = "op://homelab/OCI Terraform API Key/tenancy_ocid" }
+OCI_USER_OCID = { provider = "onepass", value = "op://homelab/OCI Terraform API Key/user_ocid" }
+OCI_FINGERPRINT = { provider = "onepass", value = "op://homelab/OCI Terraform API Key/fingerprint" }
+OCI_PRIVATE_KEY = { provider = "onepass", value = "op://homelab/OCI Terraform API Key/private_key" }
+OCI_REGION = { provider = "onepass", value = "op://homelab/OCI Terraform API Key/region" }
