@@ -1,0 +1,26 @@
+global
+  log /dev/log local0
+  log /dev/log local1 notice
+  user haproxy
+  group haproxy
+
+defaults
+  log global
+  mode tcp
+  option tcplog
+  timeout connect 5s
+  timeout client 1h
+  timeout server 1h
+
+{% for service in haproxy_tcp_services %}
+frontend {{ service.name }}
+  mode tcp
+  bind {{ service.listen_address | default('0.0.0.0') }}:{{ service.listen_port }}
+  default_backend {{ service.backend_name }}
+
+backend {{ service.backend_name }}
+  mode tcp
+  option tcp-check
+  server {{ service.backend_name }} {{ service.backend_address }}:{{ service.backend_port }} check{% if service.proxy_protocol | default('none') == 'v2' %} send-proxy-v2{% elif service.proxy_protocol | default('none') == 'v1' %} send-proxy{% endif %}
+
+{% endfor %}

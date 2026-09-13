@@ -61,6 +61,21 @@ terraform plan
 terraform apply
 ```
 
+## Ansible OCI edges
+
+The OCI edge runtime is managed from `ansible/`. Tailscale's OAuth client
+secret is scoped to `ansible/fnox.toml` and is injected only for the playbook
+process; it is not part of the global fnox configuration.
+
+```sh
+cd ansible
+FNOX_SSH_AGENT_SOCKET="$HOME/.ssh/fnox-agent.sock" "$HOME/.local/bin/fnox-ssh-agent"
+ANSIBLE_CONFIG=ansible.cfg fnox exec --non-interactive --if-missing error \
+  -c fnox.toml -- ansible-playbook \
+  -i inventory/oci_edges.yaml playbooks/edge-runtime.yaml \
+  -e "{\"ansible_ssh_common_args\":\"-o IdentityAgent=$HOME/.ssh/fnox-agent.sock\"}"
+```
+
 ## Talhelper
 
 Run Talhelper from its configuration directory. SOPS retrieves the age

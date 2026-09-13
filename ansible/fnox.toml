@@ -1,0 +1,8 @@
+# Ansible-only runtime secrets. Keep these out of the Terraform fnox context.
+if_missing = "error"
+
+[providers]
+onepass = { type = "1password", vault = "homelab" }
+
+[secrets]
+TS_OAUTH_CLIENT_SECRET = { provider = "onepass", value = "op://homelab/m44ochp57v6bmwmgvkzxomvywq/credential" }

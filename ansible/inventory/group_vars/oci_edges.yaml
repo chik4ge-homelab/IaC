@@ -1,0 +1,35 @@
+---
+edge_runtime_packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - haproxy
+  - iptables
+  - iptables-persistent
+
+tailscale_apt_key_url: https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg
+tailscale_apt_keyring: /usr/share/keyrings/tailscale-archive-keyring.gpg
+tailscale_apt_repository: >-
+  deb [signed-by={{ tailscale_apt_keyring }}]
+  https://pkgs.tailscale.com/stable/ubuntu noble main
+
+# Inject TS_AUTHKEY from the existing secret-management path at execution time.
+# It is intentionally not stored in inventory, group_vars, or host_vars.
+tailscale_auth_key: "{{ lookup('ansible.builtin.env', 'TS_AUTHKEY') | default('', true) }}"
+tailscale_oauth_client_secret: "{{ lookup('ansible.builtin.env', 'TS_OAUTH_CLIENT_SECRET') | default('', true) }}"
+tailscale_advertise_tags:
+  - tag:oci-edge
+tailscale_hostname_prefix: edge
+
+# This is the live Tailscale Service IP reported by the Kubernetes Service
+# envoy-gateway/envoy-gateway-external. It keeps HAProxy on the tailnet path.
+haproxy_tcp_services:
+  - name: public_tls
+    listen_address: 0.0.0.0
+    listen_port: 443
+    backend_name: k8s_external_gateway_tls
+    backend_address: 100.79.113.24
+    backend_port: 443
+    proxy_protocol: v2
+
+edge_iptables_persistent_file: /etc/iptables/rules.v4

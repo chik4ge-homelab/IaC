@@ -1,0 +1,16 @@
+---
+# Public addresses are the current addresses of the imported OCI instances.
+# Source of truth: terraform state for oci_core_instance.edge["oci03|oci04"].
+all:
+  children:
+    oci_edges:
+      hosts:
+        edge03:
+          ansible_host: 150.230.2.234
+          terraform_instance_key: oci03
+        edge04:
+          ansible_host: 161.33.15.192
+          terraform_instance_key: oci04
+      vars:
+        ansible_user: ubuntu
+        ansible_become: true

@@ -1,0 +1,8 @@
+---
+- name: Configure OCI edge data-plane nodes
+  hosts: oci_edges
+  become: true
+  gather_facts: true
+
+  roles:
+    - edge_runtime

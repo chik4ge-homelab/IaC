@@ -1,0 +1,21 @@
+---
+tailscale_auth_key: ""
+tailscale_oauth_client_secret: ""
+tailscale_advertise_tags: []
+tailscale_hostname_prefix: edge
+tailscale_apt_key_url: https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg
+tailscale_apt_keyring: /usr/share/keyrings/tailscale-archive-keyring.gpg
+tailscale_apt_repository: >-
+  deb [signed-by={{ tailscale_apt_keyring }}]
+  https://pkgs.tailscale.com/stable/ubuntu noble main
+
+edge_runtime_packages:
+  - ca-certificates
+  - curl
+  - gnupg
+  - haproxy
+  - iptables
+  - iptables-persistent
+
+haproxy_tcp_services: []
+edge_iptables_persistent_file: /etc/iptables/rules.v4

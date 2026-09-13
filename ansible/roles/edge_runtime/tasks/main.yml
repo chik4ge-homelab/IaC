@@ -1,0 +1,203 @@
+---
+- name: Verify supported operating system
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.distribution == 'Ubuntu'
+      - ansible_facts.distribution_major_version == '24'
+    fail_msg: This role currently supports Ubuntu 24.04 only.
+
+- name: Install base and data-plane packages
+  ansible.builtin.apt:
+    name: "{{ edge_runtime_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+    lock_timeout: 300
+
+- name: Install the Tailscale repository keyring
+  ansible.builtin.get_url:
+    url: "{{ tailscale_apt_key_url }}"
+    dest: "{{ tailscale_apt_keyring }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure the Tailscale apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ tailscale_apt_repository }}"
+    filename: tailscale
+    state: present
+    update_cache: true
+
+- name: Install Tailscale from the official repository
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+    lock_timeout: 300
+
+- name: Create runtime directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: /etc/edge-agent
+      owner: root
+      group: root
+      mode: '0750'
+    - path: /etc/haproxy
+      owner: root
+      group: root
+      mode: '0755'
+
+- name: Enable and start tailscaled
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: true
+    state: started
+
+- name: Wait for the Tailscale control socket
+  ansible.builtin.wait_for:
+    path: /run/tailscale/tailscaled.sock
+    state: present
+    timeout: 30
+
+- name: Resolve the Tailscale auth key from the execution environment
+  ansible.builtin.set_fact:
+    tailscale_auth_key: "{{ lookup('ansible.builtin.env', 'TS_AUTHKEY') }}"
+  when: tailscale_auth_key | length == 0
+  no_log: true
+
+- name: Resolve the Tailscale OAuth client secret from the execution environment
+  ansible.builtin.set_fact:
+    tailscale_oauth_client_secret: "{{ lookup('ansible.builtin.env', 'TS_OAUTH_CLIENT_SECRET') }}"
+  when: tailscale_oauth_client_secret | length == 0
+  no_log: true
+
+- name: Read the current Tailscale backend state
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Determine whether this node is already joined
+  ansible.builtin.set_fact:
+    tailscale_backend_state: >-
+      {{ (tailscale_status.stdout | default('{}') | from_json).BackendState
+         | default('NeedsLogin') }}
+
+- name: Require an execution-time Tailscale auth key when login is needed
+  ansible.builtin.assert:
+    that:
+      - >-
+        tailscale_backend_state == 'Running' or
+        (tailscale_auth_key | length > 0) or
+        (tailscale_oauth_client_secret | length > 0)
+    fail_msg: >-
+      {{ inventory_hostname }} is not joined to Tailscale. Set TS_AUTHKEY in the
+      execution environment, or set TS_OAUTH_CLIENT_SECRET when using the
+      existing OAuth credential; secrets are never stored by this role.
+
+- name: Join this node to the tailnet with a unique identity
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - up
+      - >-
+        --auth-key={{
+          tailscale_oauth_client_secret + '?ephemeral=false&preauthorized=true'
+          if tailscale_oauth_client_secret | length > 0 else tailscale_auth_key
+        }}
+      - "--hostname={{ tailscale_hostname_prefix }}{{ inventory_hostname | regex_replace('^edge', '') }}"
+      - --ssh=false
+      - --accept-dns=true
+      - --accept-routes=false
+      - "{{ '--advertise-tags=' + (tailscale_advertise_tags | join(',')) if tailscale_oauth_client_secret | length > 0 else omit }}"
+  no_log: true
+  when: tailscale_backend_state != 'Running'
+
+- name: Require at least one configured TCP service
+  ansible.builtin.assert:
+    that:
+      - haproxy_tcp_services | length > 0
+    fail_msg: No HAProxy TCP services are configured for {{ inventory_hostname }}.
+
+- name: Render the static TCP passthrough configuration
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg.ansible
+    owner: root
+    group: root
+    mode: '0644'
+  register: haproxy_candidate
+
+- name: Validate the static TCP passthrough configuration
+  ansible.builtin.command: haproxy -c -f /etc/haproxy/haproxy.cfg.ansible
+  changed_when: false
+
+- name: Install the validated HAProxy configuration
+  ansible.builtin.copy:
+    src: /etc/haproxy/haproxy.cfg.ansible
+    remote_src: true
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart HAProxy
+
+- name: Allow NLB TCP/443 in the existing OCI image firewall persistence file
+  ansible.builtin.blockinfile:
+    path: "{{ edge_iptables_persistent_file }}"
+    marker: '# {mark} ANSIBLE EDGE DATA PLANE'
+    insertafter: '^-A INPUT -p tcp .*--dport 22 .*'
+    block: |-
+      -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -m comment --comment "edge data plane TCP/443" -j ACCEPT
+
+- name: Validate the persisted iptables file
+  ansible.builtin.command:
+    cmd: iptables-restore --test {{ edge_iptables_persistent_file }}
+  changed_when: false
+
+- name: Insert the TCP/443 rule into the current firewall rules
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    ctstate:
+      - NEW
+    destination_port: '443'
+    jump: ACCEPT
+    comment: edge data plane TCP/443
+    action: insert
+    rule_num: '5'
+    state: present
+
+- name: Enable and start HAProxy
+  ansible.builtin.systemd:
+    name: haproxy
+    enabled: true
+    state: started
+
+- name: Verify HAProxy configuration
+  ansible.builtin.command: haproxy -c -f /etc/haproxy/haproxy.cfg
+  changed_when: false
+
+- name: Read the assigned Tailscale IPv4 address
+  ansible.builtin.command: tailscale ip -4
+  register: tailscale_ipv4
+  changed_when: false
+
+- name: Verify a unique Tailscale node address exists
+  ansible.builtin.assert:
+    that:
+      - tailscale_ipv4.stdout | trim is match('^100\\.')
+    fail_msg: No Tailscale IPv4 address is assigned to {{ inventory_hostname }}.
+
+- name: Verify every configured Kubernetes backend is reachable over Tailscale
+  ansible.builtin.wait_for:
+    host: "{{ item.backend_address }}"
+    port: "{{ item.backend_port }}"
+    state: started
+    timeout: 10
+  loop: "{{ haproxy_tcp_services }}"
