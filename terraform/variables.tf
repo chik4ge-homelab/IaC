@@ -51,6 +51,66 @@ variable "talos_version" {
   type        = string
 }
 
+# Fedora CoreOS variables
+variable "fedora_coreos_image_url" {
+  description = "Pinned Fedora CoreOS Proxmox VE qcow2.xz image URL"
+  type        = string
+}
+
+variable "fedora_coreos_image_sha256" {
+  description = "SHA256 checksum for the decompressed Fedora CoreOS Proxmox VE qcow2 image"
+  type        = string
+}
+
+variable "switchbot_api_token" {
+  description = "SwitchBot Open API token"
+  type        = string
+  sensitive   = true
+}
+
+variable "switchbot_api_secret" {
+  description = "SwitchBot Open API secret"
+  type        = string
+  sensitive   = true
+}
+
+variable "switchbot_mqtt_username" {
+  description = "MQTT username for the SwitchBot gateway"
+  type        = string
+  sensitive   = true
+}
+
+variable "switchbot_mqtt_password" {
+  description = "MQTT password for the SwitchBot gateway"
+  type        = string
+  sensitive   = true
+}
+
+variable "bluetooth_gateways" {
+  description = "settings for Bluetooth gateway VMs"
+  type = list(
+    object({
+      active                  = optional(bool, true)
+      name                    = string
+      vm_id                   = number
+      pve_node_name           = string
+      ip                      = string
+      iot_ip                  = optional(string)
+      memory                  = optional(number, 2048)
+      cpu_sockets             = optional(number, 1)
+      cpu_cores               = optional(number, 1)
+      disk_size               = optional(number, 10)
+      iot_vlan                = optional(bool, true)
+      usb_mapping             = optional(string, "mapping")
+      ignition_datastore_id   = optional(string, "local")
+      ignition_datastore_path = optional(string, "/var/lib/vz")
+      gateway_image           = optional(string)
+      gateway_environment     = optional(map(string), {})
+    })
+  )
+  default = []
+}
+
 variable "control_planes" {
   description = "settings for k8s control planes"
   type = list(

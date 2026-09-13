@@ -2,7 +2,8 @@ locals {
   pve_nodes = distinct(
     concat(
       [for control_node in var.control_planes : control_node.pve_node_name],
-      [for worker_node in var.workers : worker_node.pve_node_name]
+      [for worker_node in var.workers : worker_node.pve_node_name],
+      [for bluetooth_gateway in var.bluetooth_gateways : bluetooth_gateway.pve_node_name]
     )
   )
 
@@ -19,9 +20,36 @@ locals {
     for worker in var.workers : worker.name => worker if worker.active
   }
 
+  bluetooth_gateways_by_name = {
+    for bluetooth_gateway in var.bluetooth_gateways : bluetooth_gateway.name => bluetooth_gateway if bluetooth_gateway.active
+  }
+
   # image with qemu-guest-agent, other extensions are install when machineconfig is applied
   talos_iso_url       = "https://factory.talos.dev/image/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515/${var.talos_version}/nocloud-amd64.iso"
   talos_iso_file_name = "talos-nocloud-amd64.iso"
+
+  bluetooth_gateway_butane = {
+    for name, gateway in local.bluetooth_gateways_by_name : name => templatefile("${path.module}/templates/bluetooth-gateway.bu.tftpl", {
+      name            = gateway.name
+      ip              = gateway.ip
+      iot_ip          = gateway.iot_ip
+      iot_vlan        = gateway.iot_vlan
+      network_mask    = var.network_mask
+      network_gateway = var.network_gateway
+      ssh_authorized_keys = [
+        trimspace(file(pathexpand("~/.ssh/id_ed25519.pub")))
+      ]
+      gateway_image = gateway.gateway_image
+      gateway_environment = merge(gateway.gateway_environment, {
+        MQTT_HOST            = lookup(gateway.gateway_environment, "MQTT_HOST", "127.0.0.1")
+        MQTT_PORT            = lookup(gateway.gateway_environment, "MQTT_PORT", "1883")
+        SWITCHBOT_API_TOKEN  = var.switchbot_api_token
+        SWITCHBOT_API_SECRET = var.switchbot_api_secret
+        MQTT_USERNAME        = var.switchbot_mqtt_username
+        MQTT_PASSWORD        = var.switchbot_mqtt_password
+      })
+    })
+  }
 }
 
 resource "proxmox_virtual_environment_download_file" "talos_cloud_image" {
@@ -31,6 +59,49 @@ resource "proxmox_virtual_environment_download_file" "talos_cloud_image" {
   url                 = local.talos_iso_url
   file_name           = local.talos_iso_file_name
   overwrite_unmanaged = true
+}
+
+resource "proxmox_virtual_environment_file" "fedora_coreos_image" {
+  node_name    = "host01"
+  content_type = "iso"
+  datastore_id = "truenas-nfs"
+  overwrite    = true
+
+  source_file {
+    path      = "${path.module}/.cache/fedora-coreos-proxmoxve.x86_64.qcow2"
+    file_name = "fedora-coreos-proxmoxve.x86_64.qcow2.img"
+    checksum  = var.fedora_coreos_image_sha256
+  }
+}
+
+data "butane_config" "bluetooth_gateway_ignition" {
+  for_each = local.bluetooth_gateways_by_name
+
+  content = local.bluetooth_gateway_butane[each.key]
+  strict  = true
+}
+
+resource "proxmox_virtual_environment_file" "bluetooth_gateway_ignition" {
+  for_each = local.bluetooth_gateways_by_name
+
+  content_type = "snippets"
+  datastore_id = each.value.ignition_datastore_id
+  node_name    = each.value.pve_node_name
+  overwrite    = true
+
+  source_raw {
+    data      = sensitive(data.butane_config.bluetooth_gateway_ignition[each.key].ignition)
+    file_name = "${each.value.name}.ign"
+  }
+}
+
+resource "terraform_data" "bluetooth_gateway_ignition_sha256" {
+  for_each = local.bluetooth_gateways_by_name
+
+  # Keep the delivery mechanism in the replacement trigger. Fedora CoreOS
+  # reads a valid Ignition config from Proxmox user-data, while Proxmox also
+  # generates a cloud-config user-data file when this is left unset.
+  input = sha256("user-data:${data.butane_config.bluetooth_gateway_ignition[each.key].ignition}")
 }
 
 resource "proxmox_virtual_environment_vm" "control_planes" {
@@ -257,6 +328,129 @@ resource "proxmox_virtual_environment_vm" "workers" {
       ]
     }
   }
+}
+
+resource "proxmox_virtual_environment_vm" "bluetooth_gateways" {
+  for_each = local.bluetooth_gateways_by_name
+
+  lifecycle {
+    ignore_changes = [
+      disk[0].file_id,
+      tpm_state,
+    ]
+
+    replace_triggered_by = [
+      terraform_data.bluetooth_gateway_ignition_sha256[each.key],
+    ]
+
+    precondition {
+      condition     = !each.value.iot_vlan || var.iot_vlan_id != null
+      error_message = "iot_vlan_id must be set when a Bluetooth gateway has iot_vlan enabled."
+    }
+
+    precondition {
+      condition     = !each.value.iot_vlan || each.value.iot_ip != null
+      error_message = "iot_ip must be set when a Bluetooth gateway has iot_vlan enabled."
+    }
+  }
+
+  name        = each.value.name
+  description = "Managed by Terraform"
+  tags        = sort(["bluetooth", "home-assistant"])
+
+  bios            = "ovmf"
+  machine         = "q35"
+  stop_on_destroy = true
+  scsi_hardware   = "virtio-scsi-pci"
+  started         = each.value.active
+  on_boot         = each.value.active
+  operating_system {
+    type = "l26"
+  }
+
+  node_name = each.value.pve_node_name
+  vm_id     = each.value.vm_id
+
+  cpu {
+    sockets = each.value.cpu_sockets
+    cores   = each.value.cpu_cores
+    type    = "x86-64-v2-AES"
+    units   = 1024
+  }
+
+  memory {
+    dedicated = each.value.memory
+  }
+
+  tpm_state {
+    version = "v2.0"
+  }
+
+  efi_disk {
+    datastore_id = "local-lvm"
+    file_format  = "raw"
+    type         = "4m"
+  }
+
+  disk {
+    datastore_id = "local-lvm"
+    file_format  = "raw"
+    interface    = "scsi0"
+    iothread     = true
+    ssd          = true
+    discard      = "on"
+    size         = each.value.disk_size
+    file_id      = proxmox_virtual_environment_file.fedora_coreos_image.id
+  }
+
+  initialization {
+    datastore_id      = "local-lvm"
+    user_data_file_id = proxmox_virtual_environment_file.bluetooth_gateway_ignition[each.key].id
+
+    ip_config {
+      ipv4 {
+        address = "${each.value.ip}/${var.network_mask}"
+        gateway = var.network_gateway
+      }
+    }
+
+    dns {
+      servers = [
+        "8.8.8.8",
+        "8.8.4.4"
+      ]
+    }
+  }
+
+  network_device {
+    bridge  = "vmbr0"
+    vlan_id = var.network_vlan_id
+  }
+
+  dynamic "network_device" {
+    for_each = each.value.iot_vlan ? [1] : []
+    content {
+      bridge  = "vmbr0"
+      vlan_id = var.iot_vlan_id
+    }
+  }
+
+  usb {
+    mapping = each.value.usb_mapping
+    usb3    = true
+  }
+
+  serial_device {
+    device = "socket"
+  }
+
+  vga {
+    type = "serial0"
+  }
+
+  depends_on = [
+    proxmox_virtual_environment_file.bluetooth_gateway_ignition,
+  ]
 }
 
 resource "proxmox_virtual_environment_hardware_mapping_usb" "usb_mapping" {

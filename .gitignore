@@ -13,3 +13,5 @@ kubeconfig.yaml
 kubernetes-ingress-ca-crt.pem
 tmp/
 secret*
+terraform/fnox.local.toml
+terraform/.cache/

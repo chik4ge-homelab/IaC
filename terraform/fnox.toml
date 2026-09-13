@@ -9,3 +9,7 @@ TF_VAR_pve_password = { provider = "onepass", value = "op://homelab/proxmox/pass
 AWS_ENDPOINT_URL_S3 = { provider = "onepass", value = "op://homelab/remote-state-r2/endpoint" }
 AWS_ACCESS_KEY_ID = { provider = "onepass", value = "op://homelab/remote-state-r2/access-key-id" }
 AWS_SECRET_ACCESS_KEY = { provider = "onepass", value = "op://homelab/remote-state-r2/secret-access-key" }
+TF_VAR_switchbot_api_token = { provider = "onepass", value = "op://homelab/switchbot-token/token" }
+TF_VAR_switchbot_api_secret = { provider = "onepass", value = "op://homelab/switchbot-token/secret" }
+TF_VAR_switchbot_mqtt_username = { provider = "onepass", value = "op://homelab/switchbot-mqtt/username" }
+TF_VAR_switchbot_mqtt_password = { provider = "onepass", value = "op://homelab/switchbot-mqtt/credential" }

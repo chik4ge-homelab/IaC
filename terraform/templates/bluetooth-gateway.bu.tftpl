@@ -1,0 +1,209 @@
+variant: fcos
+version: 1.6.0
+
+passwd:
+  users:
+    - name: core
+      ssh_authorized_keys:
+%{ for ssh_authorized_key in ssh_authorized_keys ~}
+        - ${jsonencode(ssh_authorized_key)}
+%{ endfor ~}
+
+storage:
+%{ if gateway_image != null ~}
+  directories:
+    - path: /etc/switchbot-mqtt-gateway
+      mode: 0755
+    - path: /etc/containers/systemd
+      mode: 0755
+%{ if gateway_environment["MQTT_HOST"] == "127.0.0.1" ~}
+    - path: /etc/mosquitto
+      mode: 0755
+%{ endif ~}
+%{ endif ~}
+  files:
+    - path: /etc/hostname
+      mode: 0644
+      contents:
+        inline: ${jsonencode(name)}
+    - path: /etc/NetworkManager/system-connections/ens18.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=ens18
+          type=ethernet
+          interface-name=ens18
+
+          [ipv4]
+          method=manual
+          addresses=${ip}/${network_mask}
+          gateway=${network_gateway}
+          dns=8.8.8.8;8.8.4.4;
+
+          [ipv6]
+          method=disabled
+%{ if iot_vlan && iot_ip != null ~}
+    - path: /etc/NetworkManager/system-connections/ens19.nmconnection
+      mode: 0600
+      contents:
+        inline: |
+          [connection]
+          id=ens19
+          type=ethernet
+          interface-name=ens19
+
+          [ipv4]
+          method=manual
+          addresses=${iot_ip}/${network_mask}
+          never-default=true
+
+          [ipv6]
+          method=disabled
+%{ endif ~}
+%{ if gateway_image != null ~}
+%{ if gateway_environment["MQTT_HOST"] == "127.0.0.1" ~}
+    - path: /etc/mosquitto/mosquitto.conf
+      mode: 0644
+      contents:
+        inline: |
+          allow_anonymous false
+          password_file /mosquitto/config/passwd
+          listener 1883
+          protocol mqtt
+    - path: /usr/local/bin/generate-mosquitto-password
+      mode: 0755
+      contents:
+        inline: |
+          #!/usr/bin/bash
+          set -euo pipefail
+          password_directory="$(/usr/bin/mktemp -d /etc/mosquitto/.passwd.XXXXXX)"
+          password_name="$(/usr/bin/basename "$password_directory")"
+          password_file="$password_directory/passwd"
+          trap '/usr/bin/rm -rf "$password_directory"' EXIT
+          /usr/bin/podman run \
+            --rm \
+            --user 0:0 \
+            --security-opt label=disable \
+            --entrypoint /usr/bin/mosquitto_passwd \
+            --volume /etc/mosquitto:/mosquitto/data \
+            docker.io/library/eclipse-mosquitto:2 \
+            -b -c "/mosquitto/data/$password_name/passwd" "$MQTT_USERNAME" "$MQTT_PASSWORD"
+          /usr/bin/chown 1883:1883 "$password_file"
+          /usr/bin/chmod 0640 "$password_file"
+          /usr/bin/mv -f "$password_file" /etc/mosquitto/passwd
+          /usr/bin/rmdir "$password_directory"
+          trap - EXIT
+%{ endif ~}
+    - path: /etc/switchbot-mqtt-gateway/env
+      mode: 0600
+      contents:
+        inline: |
+%{ for key, value in gateway_environment ~}
+          ${key}=${value}
+%{ endfor ~}
+    - path: /etc/containers/systemd/switchbot-mqtt-gateway.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=SwitchBot MQTT Gateway
+          After=bluetooth.service%{ if gateway_environment["MQTT_HOST"] == "127.0.0.1" } mosquitto.service%{ endif }
+          Requires=bluetooth.service
+%{ if gateway_environment["MQTT_HOST"] == "127.0.0.1" ~}
+          Requires=mosquitto.service
+%{ endif ~}
+
+          [Container]
+          Image=${gateway_image}
+          ContainerName=switchbot-mqtt-gateway
+          EnvironmentFile=/etc/switchbot-mqtt-gateway/env
+          AddDevice=/dev/bus/usb
+          Volume=/var/run/dbus:/var/run/dbus
+          AddCapability=NET_ADMIN
+          AddCapability=NET_RAW
+          Network=host
+          SecurityLabelDisable=true
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+%{ if gateway_environment["MQTT_HOST"] == "127.0.0.1" ~}
+    - path: /etc/containers/systemd/mosquitto.container
+      mode: 0644
+      contents:
+        inline: |
+          [Unit]
+          Description=Mosquitto MQTT broker
+          After=network-online.target mosquitto-password.service
+          Wants=network-online.target
+          Requires=mosquitto-password.service
+
+          [Container]
+          Image=docker.io/library/eclipse-mosquitto:2
+          ContainerName=mosquitto
+          PublishPort=127.0.0.1:1883:1883
+%{ if iot_vlan && iot_ip != null ~}
+          PublishPort=${iot_ip}:1883:1883
+%{ endif ~}
+          Volume=/etc/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+          Volume=/etc/mosquitto/passwd:/mosquitto/config/passwd:ro
+          SecurityLabelDisable=true
+
+          [Service]
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+%{ endif ~}
+%{ endif ~}
+
+systemd:
+  units:
+    - name: rpm-ostree-install-bluetooth.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Install Bluetooth userspace packages
+        Wants=network-online.target
+        After=network-online.target
+        Before=mosquitto-password.service switchbot-mqtt-gateway.service
+        ConditionPathExists=!/var/lib/%N.stamp
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/rpm-ostree install bluez bluez-tools
+        ExecStart=/bin/touch /var/lib/%N.stamp
+        ExecStart=/usr/bin/systemctl reboot
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: bluetooth.service
+      enabled: true
+%{ if gateway_image != null ~}
+    - name: switchbot-mqtt-gateway.service
+      enabled: true
+%{ if gateway_environment["MQTT_HOST"] == "127.0.0.1" ~}
+    - name: mosquitto-password.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Generate Mosquitto password file
+        Wants=network-online.target
+        After=network-online.target rpm-ostree-install-bluetooth.service
+        Before=mosquitto.service
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        EnvironmentFile=/etc/switchbot-mqtt-gateway/env
+        ExecStart=/usr/local/bin/generate-mosquitto-password
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: mosquitto.service
+      enabled: true
+%{ endif ~}
+%{ endif ~}
