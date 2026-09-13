@@ -7,6 +7,31 @@ network_gateway = "192.168.1.1"
 network_vlan_id = 20
 iot_vlan_id     = 30
 
+oci_edge_nodes = {
+  # Keep the imported instance resource keys stable; these are logical roles.
+  edge03 = {
+    instance_key = "oci03"
+  }
+  edge04 = {
+    instance_key = "oci04"
+  }
+}
+
+oci_nlb_listeners = {
+  tcp_443 = {
+    port                  = 443
+    backend_port          = 443
+    health_check_protocol = "TCP"
+    # Existing VMs expose SSH; switch to HTTP/8080 /ready once edge-agent does.
+    health_check_port     = 22
+    health_check_interval = 10000
+    health_check_timeout  = 3000
+    health_check_retries  = 3
+    preserve_source       = false
+    proxy_protocol_v2     = false
+  }
+}
+
 talos_version = "v1.13.0" # renovate: datasource=github-releases packageName=siderolabs/talos
 
 fedora_coreos_image_url    = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20260607.3.1/x86_64/fedora-coreos-44.20260607.3.1-proxmoxve.x86_64.qcow2.xz"

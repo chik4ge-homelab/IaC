@@ -1,21 +1,23 @@
 locals {
   oci_compartment_id      = "ocid1.tenancy.oc1..aaaaaaaaaqlhtjkfznw2j7zozitiifywlpmd34op5cxtubbtioxof46o2mva"
   oci_availability_domain = "CtXY:AP-OSAKA-1-AD-1"
+  oci_vcn_id              = "ocid1.vcn.oc1.ap-osaka-1.amaaaaaadjlhumia4irma7q42dqtttlqvedu4bozu5wj6nfm2nfdlm52lhbq"
   oci_subnet_id           = "ocid1.subnet.oc1.ap-osaka-1.aaaaaaaawk4optuzzidha4qroipajrti3dw6lcou2feygwnnccbcvqi6jwca"
   oci_image_id            = "ocid1.image.oc1.ap-osaka-1.aaaaaaaaglaxxdyc7fwf77e4lq26h2nhik52d2bmxjuiqe5mzndw3zpmj4hq"
 
+  # Keep these keys stable: they are the existing Terraform state addresses.
   oci_edge_instances = {
     oci03 = {
-      instance_id = "ocid1.instance.oc1.ap-osaka-1.anvwsljrdjlhumicryukklda7ol5oc2ucn6bnhl2wpw7t7rpxca2f7gti4ja"
-      private_ip  = "10.0.0.242"
+      private_ip          = "10.0.0.242"
+      bootstrap_on_create = false
       ssh_authorized_keys = trimspace(<<-EOT
         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsC1fSLtpv/I4ea5q1GogtoWHN9qstu0wvvN50f/iXt9COAG2H9ciC7RCFVWdFQlk4q/t7qZZ1jzLpuiBw7bUvTa2kuiLCcYnjPAEjOpzraZHp0T+IEcv08YcUQUoZ2PK8yUgXmYMIhP7CIYbtadr3BVMWDG7k7H83SzCUQxLROemwhkMN/7ndCb7ip/4X8FRWGkuylzFvmX2epMhhxYfvEyXGQ+OLESjhxqw6GEabyu/U3K8pPnbrx7OGXqjO6HrXG2yRsHNAWZ/YRr1gzJo+LRMBIZfmXfmhUBtHacyj0sn9udL6lhQnsQ12lvYQkWHEbxRMpA6QLBZqswls9Arp ssh-key-2025-09-16
       EOT
       )
     }
     oci04 = {
-      instance_id = "ocid1.instance.oc1.ap-osaka-1.anvwsljrdjlhumicbpo7rss25kwztyvql2e2lv74wgrrrubbl6bm2bsrdnka"
-      private_ip  = "10.0.0.116"
+      private_ip          = "10.0.0.116"
+      bootstrap_on_create = false
       ssh_authorized_keys = trimspace(<<-EOT
         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCx3PnnedgCgG9H/6LSM2TYL159Nj63ObBzydF8OLkf0Eu9IIfd6TBUwV0tldYKHqvF6YoIKwuC6Z/xCCtTfrHC7dYEUad4S+xik7TZ3RkwnGlW+Zy+18T1w5B7Jh+B+CWQlVYLOeSG1dDxooSpaF1wlER2uWT8/ltyMHH33nV2oaYXxmIXe/rwhm9K2v7X1xWk0RP4Ahk4iqRRw2RWhgpdICbCXXn7HS+k+9iqoox08dEWxtkePx7zQZeQn6Y6A4gMw9Gc0L3puALeLxptMo6kmSXi/MQhGcXkRtg/KASF02SAO0P6NFFQiuqKfPNaPMLYgNdjFFEWFAYKxgm5NExR ssh-key-2025-09-18
       EOT
@@ -34,9 +36,16 @@ resource "oci_core_instance" "edge" {
   shape               = "VM.Standard.A1.Flex"
   state               = "RUNNING"
 
-  metadata = {
-    ssh_authorized_keys = each.value.ssh_authorized_keys
-  }
+  metadata = merge(
+    {
+      ssh_authorized_keys = each.value.ssh_authorized_keys
+    },
+    each.value.bootstrap_on_create ? {
+      user_data = base64encode(templatefile("${path.module}/templates/oci-edge-cloud-init.yaml.tftpl", {
+        node_name = each.key
+      }))
+    } : {}
+  )
 
   lifecycle {
     prevent_destroy = true
@@ -100,9 +109,10 @@ resource "oci_core_instance" "edge" {
     assign_public_ip          = "true"
     display_name              = each.key
     hostname_label            = each.key
+    nsg_ids                   = [oci_core_network_security_group.edge.id]
     private_ip                = each.value.private_ip
     skip_source_dest_check    = false
-    subnet_id                 = local.oci_subnet_id
+    subnet_id                 = oci_core_subnet.edge.id
   }
 
   instance_options {

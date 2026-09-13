@@ -33,6 +33,47 @@ variable "network_vlan_id" {
   type        = number
 }
 
+# OCI edge ingress settings
+variable "oci_edge_nodes" {
+  description = "Logical edge roles mapped to the existing OCI instance resource keys"
+  type = map(object({
+    instance_key = string
+    backend_port = optional(number)
+  }))
+  default = {}
+}
+
+variable "oci_nlb_listeners" {
+  description = "TCP listeners and backend/health-check settings for the OCI Network Load Balancer"
+  type = map(object({
+    port                  = number
+    backend_port          = optional(number, 443)
+    protocol              = optional(string, "TCP")
+    health_check_protocol = optional(string, "TCP")
+    health_check_port     = optional(number, 22)
+    health_check_path     = optional(string)
+    health_check_interval = optional(number, 10000)
+    health_check_timeout  = optional(number, 3000)
+    health_check_retries  = optional(number, 3)
+    preserve_source       = optional(bool, false)
+    proxy_protocol_v2     = optional(bool, false)
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for listener in values(var.oci_nlb_listeners) : listener.protocol == "TCP"
+    ])
+    error_message = "oci_nlb_listeners currently supports TCP listeners only."
+  }
+}
+
+variable "oci_nlb_display_name" {
+  description = "Display name for the public OCI Network Load Balancer"
+  type        = string
+  default     = "edge-nlb"
+}
+
 variable "iot_vlan_id" {
   description = "The IoT VLAN ID assigned to selected VM network interfaces"
   type        = number

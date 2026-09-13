@@ -1,0 +1,13 @@
+#cloud-config
+package_update: false
+packages:
+  - ca-certificates
+  - curl
+  - haproxy
+
+runcmd:
+  - [mkdir, -p, /etc/edge-agent, /var/lib/tailscale]
+  - [install, -d, -m, "0750", /etc/haproxy]
+
+# This bootstrap is intentionally opt-in for new instances. It does not
+# install or configure tailscaled/edge-agent; those remain runtime concerns.
