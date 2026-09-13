@@ -23,7 +23,7 @@ oci_nlb_listeners = {
     backend_port          = 443
     health_check_protocol = "TCP"
     # Existing VMs expose SSH; switch to HTTP/8080 /ready once edge-agent does.
-    health_check_port     = 22
+    health_check_port     = 443
     health_check_interval = 10000
     health_check_timeout  = 3000
     health_check_retries  = 3
