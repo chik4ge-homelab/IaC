@@ -22,9 +22,8 @@ locals {
           [for node in values(var.oci_edge_nodes) : coalesce(node.backend_port, listener.backend_port)],
           [listener.health_check_port]
           )) : {
-          key             = "${listener_key}/${port}"
-          port            = port
-          preserve_source = listener.preserve_source
+          key  = "${listener_key}/${port}"
+          port = port
         }
       ]
     ]) : rule.key => rule
@@ -96,9 +95,12 @@ resource "oci_core_network_security_group_security_rule" "edge_from_nlb" {
   direction                 = "INGRESS"
   network_security_group_id = oci_core_network_security_group.edge.id
   protocol                  = "6"
-  source                    = each.value.preserve_source ? "0.0.0.0/0" : oci_core_network_security_group.nlb.id
-  source_type               = each.value.preserve_source ? "CIDR_BLOCK" : "NETWORK_SECURITY_GROUP"
-  stateless                 = false
+  # Source preservation keeps the original client address, while the existing
+  # subnet Security List already permits TCP/443. Keep this NSG rule scoped to
+  # the NLB NSG and avoid broadening the managed NSG to 0.0.0.0/0.
+  source      = oci_core_network_security_group.nlb.id
+  source_type = "NETWORK_SECURITY_GROUP"
+  stateless   = false
 
   tcp_options {
     destination_port_range {
@@ -157,14 +159,10 @@ resource "oci_network_load_balancer_backend" "edge" {
   for_each = local.oci_nlb_backend_bindings
 
   backend_set_name         = oci_network_load_balancer_backend_set.edge[each.value.listener_key].name
-  ip_address               = oci_core_instance.edge[each.value.instance_key].private_ip
   name                     = each.value.node_key
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.edge.id
   port                     = each.value.port
-
-  lifecycle {
-    prevent_destroy = true
-  }
+  target_id                = oci_core_instance.edge[each.value.instance_key].id
 }
 
 resource "oci_network_load_balancer_listener" "edge" {

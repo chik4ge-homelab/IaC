@@ -27,7 +27,7 @@ oci_nlb_listeners = {
     health_check_interval = 10000
     health_check_timeout  = 3000
     health_check_retries  = 3
-    preserve_source       = false
+    preserve_source       = true
     proxy_protocol_v2     = false
   }
 }
