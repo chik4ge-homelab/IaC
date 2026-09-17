@@ -7,6 +7,7 @@ locals {
           listener_key = listener_key
           node_key     = node_key
           instance_key = node.instance_key
+          backend_name = "${listener.backend_name_prefix}${node_key}"
           port         = coalesce(node.backend_port, listener.backend_port)
         }
       ]
@@ -159,7 +160,7 @@ resource "oci_network_load_balancer_backend" "edge" {
   for_each = local.oci_nlb_backend_bindings
 
   backend_set_name         = oci_network_load_balancer_backend_set.edge[each.value.listener_key].name
-  name                     = each.value.node_key
+  name                     = each.value.backend_name
   network_load_balancer_id = oci_network_load_balancer_network_load_balancer.edge.id
   port                     = each.value.port
   target_id                = oci_core_instance.edge[each.value.instance_key].id

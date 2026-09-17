@@ -33,6 +33,7 @@ oci_nlb_listeners = {
   tcp_25565 = {
     port                  = 25565
     backend_port          = 25565
+    backend_name_prefix   = "minecraft-"
     health_check_protocol = "TCP"
     health_check_port     = 25565
     health_check_interval = 10000

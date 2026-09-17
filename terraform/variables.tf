@@ -48,6 +48,7 @@ variable "oci_nlb_listeners" {
   type = map(object({
     port                  = number
     backend_port          = optional(number, 443)
+    backend_name_prefix   = optional(string, "")
     protocol              = optional(string, "TCP")
     health_check_protocol = optional(string, "TCP")
     health_check_port     = optional(number, 22)
