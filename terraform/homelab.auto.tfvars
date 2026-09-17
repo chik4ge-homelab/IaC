@@ -30,6 +30,17 @@ oci_nlb_listeners = {
     preserve_source       = true
     proxy_protocol_v2     = false
   }
+  tcp_25565 = {
+    port                  = 25565
+    backend_port          = 25565
+    health_check_protocol = "TCP"
+    health_check_port     = 25565
+    health_check_interval = 10000
+    health_check_timeout  = 3000
+    health_check_retries  = 3
+    preserve_source       = true
+    proxy_protocol_v2     = false
+  }
 }
 
 talos_version = "v1.13.0" # renovate: datasource=github-releases packageName=siderolabs/talos

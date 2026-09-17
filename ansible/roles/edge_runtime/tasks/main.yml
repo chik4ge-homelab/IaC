@@ -147,31 +147,34 @@
     mode: '0644'
   notify: Restart HAProxy
 
-- name: Allow NLB TCP/443 in the existing OCI image firewall persistence file
+- name: Allow NLB TCP data-plane ports in the existing OCI image firewall persistence file
   ansible.builtin.blockinfile:
     path: "{{ edge_iptables_persistent_file }}"
     marker: '# {mark} ANSIBLE EDGE DATA PLANE'
     insertafter: '^-A INPUT -p tcp .*--dport 22 .*'
     block: |-
-      -A INPUT -p tcp -m state --state NEW -m tcp --dport 443 -m comment --comment "edge data plane TCP/443" -j ACCEPT
+      {% for service in haproxy_tcp_services %}
+      -A INPUT -p tcp -m state --state NEW -m tcp --dport {{ service.listen_port }} -m comment --comment "edge data plane TCP/{{ service.listen_port }}" -j ACCEPT
+      {% endfor %}
 
 - name: Validate the persisted iptables file
   ansible.builtin.command:
     cmd: iptables-restore --test {{ edge_iptables_persistent_file }}
   changed_when: false
 
-- name: Insert the TCP/443 rule into the current firewall rules
+- name: Insert TCP data-plane rules into the current firewall
   ansible.builtin.iptables:
     chain: INPUT
     protocol: tcp
     ctstate:
       - NEW
-    destination_port: '443'
+    destination_port: "{{ item.listen_port }}"
     jump: ACCEPT
-    comment: edge data plane TCP/443
+    comment: "edge data plane TCP/{{ item.listen_port }}"
     action: insert
     rule_num: '5'
     state: present
+  loop: "{{ haproxy_tcp_services }}"
 
 - name: Enable and start HAProxy
   ansible.builtin.systemd:

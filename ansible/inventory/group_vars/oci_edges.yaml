@@ -31,5 +31,12 @@ haproxy_tcp_services:
     backend_address: envoy-gateway-envoy-gateway-external.serval-great.ts.net
     backend_port: 443
     proxy_protocol: v2
+  - name: minecraft
+    listen_address: 0.0.0.0
+    listen_port: 25565
+    backend_name: k8s_minecraft
+    backend_address: envoy-gateway-envoy-gateway-external.serval-great.ts.net
+    backend_port: 25565
+    proxy_protocol: v2
 
 edge_iptables_persistent_file: /etc/iptables/rules.v4
