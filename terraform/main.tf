@@ -7,6 +7,10 @@ locals {
     )
   )
 
+  # All current Proxmox hosts expose AVX2; use the common x86-64-v3 guest
+  # baseline for Talos nodes so CPU-bound inference can use those features.
+  k8s_cpu_type = "x86-64-v3"
+
   # Map to associate node names with the corresponding talos_cloud_image index
   node_to_image_index = {
     for idx, node in local.pve_nodes : node => idx
@@ -126,13 +130,14 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
     type = "l26"
   }
 
-  node_name = each.value.pve_node_name
-  vm_id     = each.value.vm_id
+  node_name           = each.value.pve_node_name
+  vm_id               = each.value.vm_id
+  reboot_after_update = true
 
   cpu {
     sockets = each.value.cpu_sockets
     cores   = each.value.cpu_cores
-    type    = "x86-64-v2-AES"
+    type    = local.k8s_cpu_type
     units   = 1024
   }
 
@@ -217,13 +222,14 @@ resource "proxmox_virtual_environment_vm" "workers" {
     type = "l26"
   }
 
-  node_name = each.value.pve_node_name
-  vm_id     = each.value.vm_id
+  node_name           = each.value.pve_node_name
+  vm_id               = each.value.vm_id
+  reboot_after_update = true
 
   cpu {
     sockets = each.value.cpu_sockets
     cores   = each.value.cpu_cores
-    type    = "x86-64-v2-AES"
+    type    = local.k8s_cpu_type
     units   = 1024
   }
 
