@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.93.0"
+      version = "0.116.0"
     }
     butane = {
       source  = "KeisukeYamashita/butane"
