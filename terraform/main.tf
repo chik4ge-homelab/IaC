@@ -219,7 +219,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
   machine         = "q35"
   stop_on_destroy = false
   scsi_hardware   = "virtio-scsi-single"
-  started         = each.value.active
+  started         = each.value.started
   on_boot         = each.value.active
   operating_system {
     type = "l26"

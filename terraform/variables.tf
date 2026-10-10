@@ -176,6 +176,7 @@ variable "workers" {
     object({
       active              = optional(bool, true) # Enable or disable the worker node
       reboot_after_update = optional(bool, true) # Disable to coordinate a guest-side reboot
+      started             = optional(bool, true) # VM power state; independent of resource activation
       name                = string
       vm_id               = number
       pve_node_name       = string

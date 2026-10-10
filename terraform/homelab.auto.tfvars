@@ -87,17 +87,16 @@ workers = [
     openebs_disk_size = 200
   },
   {
-    name                = "k8s-w-blossom"
-    vm_id               = 202
-    reboot_after_update = false
-    pve_node_name       = "host04"
-    ip                  = "192.168.1.202"
-    memory              = 24 * 1024
-    cpu_cores           = 12
-    disk_size           = 100
-    openebs_disk_size   = 200
-    iot_vlan            = true
-    usb                 = true
+    name              = "k8s-w-blossom"
+    vm_id             = 202
+    pve_node_name     = "host04"
+    ip                = "192.168.1.202"
+    memory            = 24 * 1024
+    cpu_cores         = 12
+    disk_size         = 100
+    openebs_disk_size = 200
+    iot_vlan          = true
+    usb               = true
     pci_mappings = [
       {
         mapping = "IntelIGPU-host04"
@@ -142,16 +141,15 @@ workers = [
     ]
   },
   {
-    name                = "k8s-w-freesia"
-    vm_id               = 206
-    reboot_after_update = false
-    pve_node_name       = "host05"
-    ip                  = "192.168.1.206"
-    memory              = 28 * 1024
-    cpu_cores           = 12
-    disk_size           = 100
-    iot_vlan            = true
-    usb                 = true
+    name          = "k8s-w-freesia"
+    vm_id         = 206
+    pve_node_name = "host05"
+    ip            = "192.168.1.206"
+    memory        = 28 * 1024
+    cpu_cores     = 12
+    disk_size     = 100
+    iot_vlan      = true
+    usb           = true
     pci_mappings = [
       {
         mapping = "IntelIGPU-host05"
