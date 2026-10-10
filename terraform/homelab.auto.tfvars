@@ -87,16 +87,23 @@ workers = [
     openebs_disk_size = 200
   },
   {
-    name              = "k8s-w-blossom"
-    vm_id             = 202
-    pve_node_name     = "host04"
-    ip                = "192.168.1.202"
-    memory            = 24 * 1024
-    cpu_cores         = 12
-    disk_size         = 100
-    openebs_disk_size = 200
-    iot_vlan          = true
-    usb               = true
+    name                = "k8s-w-blossom"
+    vm_id               = 202
+    reboot_after_update = false
+    pve_node_name       = "host04"
+    ip                  = "192.168.1.202"
+    memory              = 24 * 1024
+    cpu_cores           = 12
+    disk_size           = 100
+    openebs_disk_size   = 200
+    iot_vlan            = true
+    usb                 = true
+    pci_mappings = [
+      {
+        mapping = "IntelIGPU-host04"
+        pcie    = true
+      }
+    ]
   },
   {
     name              = "k8s-w-clover"
@@ -135,15 +142,22 @@ workers = [
     ]
   },
   {
-    name          = "k8s-w-freesia"
-    vm_id         = 206
-    pve_node_name = "host05"
-    ip            = "192.168.1.206"
-    memory        = 28 * 1024
-    cpu_cores     = 12
-    disk_size     = 100
-    iot_vlan      = true
-    usb           = true
+    name                = "k8s-w-freesia"
+    vm_id               = 206
+    reboot_after_update = false
+    pve_node_name       = "host05"
+    ip                  = "192.168.1.206"
+    memory              = 28 * 1024
+    cpu_cores           = 12
+    disk_size           = 100
+    iot_vlan            = true
+    usb                 = true
+    pci_mappings = [
+      {
+        mapping = "IntelIGPU-host05"
+        pcie    = true
+      }
+    ]
   },
 ]
 
@@ -194,6 +208,26 @@ pci_devices = [
       node         = "host03"
       path         = "0000:01:00"
       subsystem_id = "1462:c972"
+    }]
+  },
+  {
+    name = "IntelIGPU-host04"
+    map = [{
+      id           = "8086:4626"
+      iommu_group  = 0
+      node         = "host04"
+      path         = "0000:00:02"
+      subsystem_id = "0000:0000"
+    }]
+  },
+  {
+    name = "IntelIGPU-host05"
+    map = [{
+      id           = "8086:4626"
+      iommu_group  = 0
+      node         = "host05"
+      path         = "0000:00:02"
+      subsystem_id = "0000:0000"
     }]
   }
 ]

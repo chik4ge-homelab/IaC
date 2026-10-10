@@ -196,6 +196,9 @@ resource "proxmox_virtual_environment_vm" "control_planes" {
 resource "proxmox_virtual_environment_vm" "workers" {
   for_each = local.workers_by_name
 
+  # PCI mappings are referenced by name in each VM's hostpci configuration.
+  depends_on = [proxmox_virtual_environment_hardware_mapping_pci.pci_mappings]
+
   lifecycle {
     ignore_changes = [
       disk[0].file_id,
@@ -224,7 +227,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   node_name           = each.value.pve_node_name
   vm_id               = each.value.vm_id
-  reboot_after_update = true
+  reboot_after_update = each.value.reboot_after_update
 
   cpu {
     sockets = each.value.cpu_sockets

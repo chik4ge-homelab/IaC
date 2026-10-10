@@ -174,18 +174,19 @@ variable "workers" {
   description = "settings for k8s worker nodes"
   type = list(
     object({
-      active            = optional(bool, true) # Enable or disable the worker node
-      name              = string
-      vm_id             = number
-      pve_node_name     = string
-      ip                = string
-      memory            = optional(number, 10 * 1024) # 10GB (per-node override below)
-      cpu_sockets       = optional(number, 1)
-      cpu_cores         = optional(number, 4)
-      disk_size         = optional(number, 130) # 130GB
-      openebs_disk_size = optional(number)
-      iot_vlan          = optional(bool, false) # Attach an additional NIC for the IoT VLAN
-      usb               = optional(bool, true)  # Enable USB passthrough
+      active              = optional(bool, true) # Enable or disable the worker node
+      reboot_after_update = optional(bool, true) # Disable to coordinate a guest-side reboot
+      name                = string
+      vm_id               = number
+      pve_node_name       = string
+      ip                  = string
+      memory              = optional(number, 10 * 1024) # 10GB (per-node override below)
+      cpu_sockets         = optional(number, 1)
+      cpu_cores           = optional(number, 4)
+      disk_size           = optional(number, 130) # 130GB
+      openebs_disk_size   = optional(number)
+      iot_vlan            = optional(bool, false) # Attach an additional NIC for the IoT VLAN
+      usb                 = optional(bool, true)  # Enable USB passthrough
       pci_mappings = optional(
         list(
           object({

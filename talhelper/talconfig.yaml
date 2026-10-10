@@ -71,6 +71,13 @@ nodes:
     installDisk: /dev/sda
     nodeLabels:
       chik4ge.me/iot-access: "true"
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/i915
+            - siderolabs/qemu-guest-agent
     patches:
       - |-
         machine:
@@ -84,6 +91,11 @@ nodes:
             net.ipv6.conf.all.forwarding: "0"
             net.ipv6.conf.eth1.accept_ra: "1"
             net.ipv6.conf.eth1.accept_ra_rt_info_max_plen: "64"
+      - |-
+        machine:
+          kernel:
+            modules:
+              - name: i915
 
   - hostname: k8s-w-clover
     controlPlane: false
@@ -125,6 +137,13 @@ nodes:
     installDisk: /dev/sda
     nodeLabels:
       chik4ge.me/iot-access: "true"
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/iscsi-tools
+            - siderolabs/i915
+            - siderolabs/qemu-guest-agent
     patches:
       - |-
         machine:
@@ -138,6 +157,11 @@ nodes:
             net.ipv6.conf.all.forwarding: "0"
             net.ipv6.conf.eth1.accept_ra: "1"
             net.ipv6.conf.eth1.accept_ra_rt_info_max_plen: "64"
+      - |-
+        machine:
+          kernel:
+            modules:
+              - name: i915
 
   # - hostname: k8s-w-zinnia
   #   controlPlane: false
