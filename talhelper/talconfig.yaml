@@ -96,6 +96,14 @@ nodes:
           kernel:
             modules:
               - name: i915
+      - |-
+        machine:
+          kubelet:
+            extraConfig:
+              registerWithTaints:
+                - key: chik4ge.me/gpu
+                  value: "true"
+                  effect: PreferNoSchedule
 
   - hostname: k8s-w-clover
     controlPlane: false
@@ -130,6 +138,14 @@ nodes:
               - name: nvidia_modeset
           sysctls:
             net.core.bpf_jit_harden: 1
+      - |-
+        machine:
+          kubelet:
+            extraConfig:
+              registerWithTaints:
+                - key: chik4ge.me/gpu
+                  value: "true"
+                  effect: PreferNoSchedule
 
   - hostname: k8s-w-freesia
     controlPlane: false
@@ -162,6 +178,14 @@ nodes:
           kernel:
             modules:
               - name: i915
+      - |-
+        machine:
+          kubelet:
+            extraConfig:
+              registerWithTaints:
+                - key: chik4ge.me/gpu
+                  value: "true"
+                  effect: PreferNoSchedule
 
   # - hostname: k8s-w-zinnia
   #   controlPlane: false
